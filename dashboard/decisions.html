@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glass Box — Decision Attribution</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ["'JetBrains Mono'", "'Fira Code'", "'SF Mono'", "'Cascadia Code'", "ui-monospace", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+  </style>
+</head>
+<body class="font-mono antialiased">
+
+  <!-- ================================================================
+       MOBILE SIDEBAR OVERLAY
+  ================================================================ -->
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- ================================================================
+       SIDEBAR (fixed, 256px)
+  ================================================================ -->
+  <aside id="sidebar" class="sidebar">
+
+    <!-- Logo -->
+    <div class="px-5 py-5 border-b border-[#1e293b]">
+      <div class="flex items-center gap-3">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="24" height="24" rx="4" stroke="#38bdf8" stroke-width="1.5"/>
+          <rect x="6" y="6" width="16" height="16" rx="2" stroke="#38bdf8" stroke-width="1" fill="rgba(56,189,248,0.03)"/>
+          <circle cx="14" cy="14" r="3.5" fill="#38bdf8"/>
+          <circle cx="14" cy="14" r="5" stroke="#22d3ee" stroke-width="0.5" opacity="0.4" class="ring-pulse"/>
+        </svg>
+        <div>
+          <div class="text-[13px] font-bold tracking-wider text-[#f1f5f9]">GLASS BOX</div>
+          <div class="text-[10px] text-[#475569] tracking-wide">AI Orchestration</div>
+        </div>
+        <div class="ml-auto">
+          <span class="inline-block w-2 h-2 rounded-full bg-[#22d3ee] soft-blink" title="System Online"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <div class="px-3 pb-2 text-[9px] font-bold tracking-[0.14em] uppercase text-[#334155]">Navigate</div>
+
+      <!-- Command Center -->
+      <a href="index.html" class="nav-item" data-page="command-center">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+        </svg>
+        <span>Command Center</span>
+      </a>
+
+      <!-- Agent Registry -->
+      <a href="agents.html" class="nav-item" data-page="agent-registry">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+        </svg>
+        <span>Agent Registry</span>
+      </a>
+
+      <!-- Execution Trace -->
+      <a href="trace.html" class="nav-item" data-page="execution-trace">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+        </svg>
+        <span>Execution Trace</span>
+      </a>
+
+      <!-- Approvals -->
+      <a href="approvals.html" class="nav-item" data-page="approvals">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+        </svg>
+        <span>Approvals</span>
+        <span class="ml-auto inline-flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold bg-[rgba(251,191,36,0.2)] text-[#fbbf24] border border-[rgba(251,191,36,0.3)]" id="sidebar-approval-count">2</span>
+      </a>
+
+      <!-- Decisions (active) -->
+      <a href="decisions.html" class="nav-item active" data-page="decisions">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>
+        </svg>
+        <span>Decisions</span>
+      </a>
+
+      <!-- Audit Log -->
+      <a href="audit.html" class="nav-item" data-page="audit-log">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+        </svg>
+        <span>Audit Log</span>
+      </a>
+
+      <!-- Memory -->
+      <a href="memory.html" class="nav-item" data-page="memory">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>
+        </svg>
+        <span>Memory</span>
+      </a>
+
+      <div class="px-3 pt-4 pb-2 text-[9px] font-bold tracking-[0.14em] uppercase text-[#334155]">Tools</div>
+
+      <a href="jobs.html" class="nav-item" data-page="jobs">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0"/>
+        </svg>
+        <span>NEXUS</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(34,211,238,0.2)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]">NEW</span>
+      </a>
+
+      <a href="github.html" class="nav-item" data-page="github">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        <span>GitHub</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(34,211,238,0.2)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]">NEW</span>
+      </a>
+
+      <a href="store.html" class="nav-item" data-page="store">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        <span>Store</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(251,191,36,0.2)] text-[#fbbf24] border border-[rgba(251,191,36,0.3)]">$</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar footer -->
+    <div class="px-4 py-4 border-t border-[#1e293b]">
+      <!-- System status -->
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-block w-[6px] h-[6px] rounded-full bg-[#4ade80] shadow-[0_0_6px_rgba(74,222,128,0.5)]"></span>
+        <span class="text-[10px] font-bold tracking-[0.1em] text-[#4ade80]">SYSTEM NOMINAL</span>
+      </div>
+      <!-- Clock -->
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] text-[#475569]">Local time</span>
+        <span id="sidebar-clock" class="text-[11px] text-[#94a3b8] tabular-nums">--:--:--</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================================================================
+       MAIN CONTENT
+  ================================================================ -->
+  <main class="main-content min-h-screen">
+
+    <!-- Mobile menu button -->
+    <button id="mobile-menu-btn" class="mobile-menu-btn fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#0f172a] border border-[#1e293b] text-[#94a3b8] lg:hidden" onclick="toggleSidebar()">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+      </svg>
+    </button>
+
+    <!-- Page padding wrapper -->
+    <div class="px-6 py-6 lg:px-10 lg:py-8 max-w-[1440px] mx-auto">
+
+      <!-- ============================================================
+           PAGE HEADER
+      ============================================================ -->
+      <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <div class="text-[9px] font-bold tracking-[0.14em] uppercase text-[#22d3ee] mb-1">DECISION ATTRIBUTION</div>
+          <h1 class="text-xl font-bold text-[#f1f5f9] tracking-wide">Output Traceability</h1>
+          <p class="text-[12px] text-[#475569] mt-1 tracking-wide">Trace every output back to its upstream data, agents, and reasoning</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <span class="text-[9px] font-bold tracking-[0.12em] text-[#334155]">TRACKED</span>
+            <span id="header-decision-count" class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-[rgba(34,211,238,0.1)] text-[#22d3ee] border border-[rgba(34,211,238,0.25)]">4 decisions</span>
+          </div>
+          <div class="w-px h-4 bg-[#1e293b]"></div>
+          <span id="header-clock" class="text-[12px] text-[#64748b] tabular-nums">--:--:--</span>
+        </div>
+      </header>
+
+      <!-- ============================================================
+           DECISION CARDS
+      ============================================================ -->
+      <section id="decisions-container" class="space-y-6 mb-8 stagger-children" aria-label="Decision attribution cards">
+        <!-- Decision cards populated by JS -->
+        <div class="text-[11px] text-[#334155] py-6 text-center">Loading decisions...</div>
+      </section>
+
+      <!-- ============================================================
+           FOOTER
+      ============================================================ -->
+      <footer class="pt-4 pb-2 border-t border-[#0f172a]">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div class="text-[10px] text-[#1e293b] tracking-wide">
+            Glass Box &middot; AI Orchestration Dashboard &middot; Read-Only &middot; No server &middot; No build step
+          </div>
+          <div class="text-[10px] text-[#1e293b]">
+            Open <code class="text-[#334155]">dashboard/index.html</code> locally
+          </div>
+        </div>
+      </footer>
+
+    </div><!-- /page padding wrapper -->
+  </main><!-- /main-content -->
+
+  <!-- ================================================================
+       SCRIPTS
+  ================================================================ -->
+  <script src="js/data.js"></script>
+
+  <script>
+  (function () {
+
+    // ── Clock ──
+    function updateClocks() {
+      var d = new Date();
+      var pad = function (n) { return String(n).padStart(2, '0'); };
+      var t = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      var el1 = document.getElementById('sidebar-clock');
+      var el2 = document.getElementById('header-clock');
+      if (el1) el1.textContent = t;
+      if (el2) el2.textContent = t;
+    }
+    setInterval(updateClocks, 1000);
+    updateClocks();
+
+    // ── Mobile sidebar toggle ──
+    window.toggleSidebar = function () {
+      var sidebar = document.getElementById('sidebar');
+      var overlay = document.getElementById('sidebar-overlay');
+      if (sidebar) sidebar.classList.toggle('open');
+      if (overlay) overlay.classList.toggle('active');
+    };
+
+    // ── Agent color lookup ──
+    function agentColor(agentId) {
+      var map = {
+        atlas: '#818cf8', scout: '#38bdf8', cipher: '#4ade80',
+        scribe: '#fbbf24', sentinel: '#f87171', nicholas: '#e879f9'
+      };
+      return map[agentId] || '#64748b';
+    }
+
+    // ── Confidence bar color ──
+    function confColor(score) {
+      if (score >= 80) return '#4ade80';
+      if (score >= 60) return '#fbbf24';
+      return '#f87171';
+    }
+
+    function confColorBg(score) {
+      if (score >= 80) return 'rgba(74,222,128,0.15)';
+      if (score >= 60) return 'rgba(251,191,36,0.15)';
+      return 'rgba(248,113,113,0.15)';
+    }
+
+    // ── Type badge class ──
+    function typeBadgeClass(type) {
+      var map = {
+        directive: 'type-directive',
+        data: 'type-data',
+        analysis: 'type-analysis',
+        assumption: 'type-assumption',
+        compliance: 'type-compliance',
+        document: 'type-document',
+        finding: 'type-finding'
+      };
+      return map[type] || 'type-data';
+    }
+
+    // ── Render decision cards ──
+    function renderDecisions(decisions) {
+      var container = document.getElementById('decisions-container');
+      if (!container) return;
+      if (!decisions || decisions.length === 0) {
+        container.innerHTML = '<div class="text-[11px] text-[#334155] py-6 text-center">No decisions tracked.</div>';
+        return;
+      }
+
+      // Update header count
+      var countEl = document.getElementById('header-decision-count');
+      if (countEl) countEl.textContent = decisions.length + ' decision' + (decisions.length !== 1 ? 's' : '') + ' tracked';
+
+      container.innerHTML = decisions.map(function (dec) {
+        var color = agentColor(dec.producedById);
+        var cColor = confColor(dec.confidenceScore);
+        var cBg = confColorBg(dec.confidenceScore);
+
+        // Build context chain HTML
+        var chainHtml = dec.contextChain.map(function (item, idx) {
+          var aColor = agentColor(item.agentId);
+          var badgeCls = typeBadgeClass(item.type);
+          var isLast = idx === dec.contextChain.length - 1;
+
+          return '' +
+            '<div class="flex items-start gap-0">' +
+              // Vertical connector column
+              '<div class="flex flex-col items-center flex-shrink-0" style="width: 24px;">' +
+                '<div class="w-[10px] h-[10px] rounded-full flex-shrink-0 border-2" style="border-color: ' + aColor + '; background: ' + aColor + '30;"></div>' +
+                (isLast ? '' : '<div class="w-[2px] flex-grow min-h-[28px]" style="background: linear-gradient(to bottom, ' + aColor + '40, #1e293b);"></div>') +
+              '</div>' +
+              // Chain item content
+              '<div class="flex-1 pb-4 ml-2">' +
+                '<div class="glass-card rounded-lg p-3 border-l-2" style="border-left-color: ' + aColor + ';">' +
+                  '<div class="flex flex-wrap items-center gap-2 mb-1">' +
+                    '<span class="text-[11px] font-semibold" style="color: ' + aColor + ';">' + item.agent + '</span>' +
+                    '<span class="text-[10px] text-[#334155]">&rarr;</span>' +
+                    '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase ' + badgeCls + '">' + item.type + '</span>' +
+                  '</div>' +
+                  '<div class="text-[11px] text-[#94a3b8] leading-relaxed">' + item.input + '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+        }).join('');
+
+        return '' +
+          '<div class="glass-card rounded-xl overflow-hidden">' +
+
+            // ── Header row ──
+            '<div class="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-[rgba(30,41,59,0.6)]">' +
+              '<span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-[rgba(34,211,238,0.1)] text-[#22d3ee] border border-[rgba(34,211,238,0.25)]">' + dec.id + '</span>' +
+              '<h3 class="text-[14px] font-bold text-[#f1f5f9] tracking-wide flex-1">' + dec.title + '</h3>' +
+              '<span class="text-[10px] text-[#475569] tabular-nums flex-shrink-0">' + dec.displayTime + '</span>' +
+            '</div>' +
+
+            '<div class="px-6 py-5 space-y-5">' +
+
+              // ── Output Summary ──
+              '<div>' +
+                '<div class="text-[9px] font-bold tracking-[0.12em] uppercase text-[#475569] mb-2">Output Summary</div>' +
+                '<p class="text-[12px] text-[#cbd5e1] leading-relaxed">' + dec.outputSummary + '</p>' +
+              '</div>' +
+
+              // ── Produced By + Confidence row ──
+              '<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">' +
+
+                // Produced By
+                '<div>' +
+                  '<div class="text-[9px] font-bold tracking-[0.12em] uppercase text-[#475569] mb-2">Produced By</div>' +
+                  '<div class="flex items-center gap-2">' +
+                    '<span class="inline-block w-[8px] h-[8px] rounded-full" style="background: ' + color + '; box-shadow: 0 0 6px ' + color + '60;"></span>' +
+                    '<span class="text-[12px] font-semibold" style="color: ' + color + ';">' + dec.producedBy + '</span>' +
+                  '</div>' +
+                '</div>' +
+
+                // Confidence Score
+                '<div>' +
+                  '<div class="text-[9px] font-bold tracking-[0.12em] uppercase text-[#475569] mb-2">Confidence Score</div>' +
+                  '<div class="flex items-center gap-3">' +
+                    '<div class="flex-1">' +
+                      '<div class="conf-bar-track" style="height: 6px;">' +
+                        '<div class="conf-bar-fill" style="width: ' + dec.confidenceScore + '%; background: ' + cColor + ';"></div>' +
+                      '</div>' +
+                    '</div>' +
+                    '<span class="text-[12px] font-bold tabular-nums flex-shrink-0" style="color: ' + cColor + ';">' + dec.confidenceScore + '%</span>' +
+                  '</div>' +
+                '</div>' +
+
+              '</div>' +
+
+              // ── Context Chain ──
+              '<div>' +
+                '<div class="flex items-center gap-2 mb-4">' +
+                  '<div class="text-[9px] font-bold tracking-[0.12em] uppercase text-[#475569]">Context Chain</div>' +
+                  '<span class="text-[9px] text-[#334155]">' + dec.contextChain.length + ' upstream contributions</span>' +
+                '</div>' +
+                '<div class="ml-1">' +
+                  chainHtml +
+                '</div>' +
+              '</div>' +
+
+            '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    // ── Initialize ──
+    if (typeof DECISIONS !== 'undefined') {
+      renderDecisions(DECISIONS);
+    }
+
+  })();
+  </script>
+
+</body>
+</html>

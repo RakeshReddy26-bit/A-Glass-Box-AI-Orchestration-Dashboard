@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glass Box — NEXUS</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ["'JetBrains Mono'", "'Fira Code'", "'SF Mono'", "'Cascadia Code'", "ui-monospace", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+    .job-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 300ms ease, transform 150ms ease;
+    }
+    .job-card:hover {
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+    }
+    .tag-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      border: 1px solid;
+    }
+    .source-remotive { background: rgba(74,222,128,0.1); color: #4ade80; border-color: rgba(74,222,128,0.3); }
+    .source-arbeitnow { background: rgba(56,189,248,0.1); color: #38bdf8; border-color: rgba(56,189,248,0.3); }
+    .source-adzuna { background: rgba(251,191,36,0.1); color: #fbbf24; border-color: rgba(251,191,36,0.3); }
+    .btn-primary {
+      background: rgba(34,211,238,0.15);
+      border: 1px solid rgba(34,211,238,0.4);
+      color: #22d3ee;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+    .btn-primary:hover { background: rgba(34,211,238,0.25); border-color: #22d3ee; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary {
+      background: rgba(100,116,139,0.15);
+      border: 1px solid rgba(100,116,139,0.3);
+      color: #94a3b8;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+    .btn-secondary:hover { background: rgba(100,116,139,0.25); }
+    .pipeline-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 11px;
+      border: 1px solid transparent;
+    }
+    .pipeline-step.active {
+      border-color: rgba(34,211,238,0.4);
+      background: rgba(34,211,238,0.08);
+      color: #22d3ee;
+    }
+    .pipeline-step.done {
+      border-color: rgba(74,222,128,0.3);
+      background: rgba(74,222,128,0.08);
+      color: #4ade80;
+    }
+    .pipeline-step.waiting {
+      border-color: rgba(51,65,85,0.4);
+      color: #475569;
+    }
+    .cover-letter-box {
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 10px;
+      padding: 16px;
+      white-space: pre-wrap;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #cbd5e1;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .stat-card {
+      background: rgba(15,23,42,0.7);
+      border: 1px solid rgba(51,65,85,0.5);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 1s linear infinite; }
+  </style>
+</head>
+<body class="font-mono antialiased">
+
+  <!-- Sidebar overlay (mobile) -->
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- ================================================================
+       SIDEBAR
+  ================================================================ -->
+  <aside id="sidebar" class="sidebar">
+    <div class="px-5 py-5 border-b border-[#1e293b]">
+      <div class="flex items-center gap-3">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="24" height="24" rx="4" stroke="#38bdf8" stroke-width="1.5"/>
+          <rect x="6" y="6" width="16" height="16" rx="2" stroke="#38bdf8" stroke-width="1" fill="rgba(56,189,248,0.03)"/>
+          <circle cx="14" cy="14" r="3.5" fill="#38bdf8"/>
+          <circle cx="14" cy="14" r="5" stroke="#22d3ee" stroke-width="0.5" opacity="0.4" class="ring-pulse"/>
+        </svg>
+        <div>
+          <div class="text-[13px] font-bold tracking-wider text-[#f1f5f9]">GLASS BOX</div>
+          <div class="text-[10px] text-[#475569] tracking-wide">AI Orchestration</div>
+        </div>
+        <div class="ml-auto">
+          <span class="inline-block w-2 h-2 rounded-full bg-[#22d3ee] soft-blink" title="System Online"></span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <div class="px-3 pb-2 text-[9px] font-bold tracking-[0.14em] uppercase text-[#334155]">Navigate</div>
+
+      <a href="index.html" class="nav-item" data-page="command-center">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+        </svg>
+        <span>Command Center</span>
+      </a>
+
+      <a href="agents.html" class="nav-item" data-page="agent-registry">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+        </svg>
+        <span>Agent Registry</span>
+      </a>
+
+      <a href="trace.html" class="nav-item" data-page="execution-trace">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+        </svg>
+        <span>Execution Trace</span>
+      </a>
+
+      <a href="approvals.html" class="nav-item" data-page="approvals">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+        </svg>
+        <span>Approvals</span>
+      </a>
+
+      <a href="decisions.html" class="nav-item" data-page="decisions">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>
+        </svg>
+        <span>Decisions</span>
+      </a>
+
+      <a href="audit.html" class="nav-item" data-page="audit-log">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+        </svg>
+        <span>Audit Log</span>
+      </a>
+
+      <a href="memory.html" class="nav-item" data-page="memory">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>
+        </svg>
+        <span>Memory</span>
+      </a>
+
+      <div class="px-3 pt-4 pb-2 text-[9px] font-bold tracking-[0.14em] uppercase text-[#334155]">Tools</div>
+
+      <!-- NEXUS (active) -->
+      <a href="jobs.html" class="nav-item active" data-page="jobs">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0"/>
+        </svg>
+        <span>NEXUS</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(34,211,238,0.2)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]">NEW</span>
+      </a>
+
+      <a href="github.html" class="nav-item" data-page="github">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        <span>GitHub</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(34,211,238,0.2)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]">NEW</span>
+      </a>
+
+      <a href="store.html" class="nav-item" data-page="store">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        <span>Store</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(251,191,36,0.2)] text-[#fbbf24] border border-[rgba(251,191,36,0.3)]">$</span>
+      </a>
+    </nav>
+
+    <div class="px-4 py-4 border-t border-[#1e293b]">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-block w-[6px] h-[6px] rounded-full bg-[#4ade80] shadow-[0_0_6px_rgba(74,222,128,0.5)]"></span>
+        <span class="text-[10px] font-bold tracking-[0.1em] text-[#4ade80]" id="status-text">SYSTEM NOMINAL</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] text-[#475569]">Local time</span>
+        <span id="sidebar-clock" class="text-[11px] text-[#94a3b8] tabular-nums">--:--:--</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================================================================
+       MAIN CONTENT
+  ================================================================ -->
+  <main class="main-content min-h-screen">
+
+    <button id="mobile-menu-btn" class="mobile-menu-btn fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#0f172a] border border-[#1e293b] text-[#94a3b8] lg:hidden" onclick="toggleSidebar()">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+      </svg>
+    </button>
+
+    <div class="px-6 py-6 lg:px-10 lg:py-8 max-w-[1440px] mx-auto">
+
+      <!-- ============================================================
+           PAGE HEADER
+      ============================================================ -->
+      <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <div class="text-[9px] font-bold tracking-[0.14em] uppercase text-[#22d3ee] mb-1">NEXUS — Job Intelligence</div>
+          <h1 class="text-xl font-bold text-[#f1f5f9] tracking-wide">AI-Powered Job Search Pipeline</h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <span id="backend-status" class="text-[11px] text-[#64748b]">Checking backend...</span>
+          <div class="w-px h-4 bg-[#1e293b]"></div>
+          <span id="header-clock" class="text-[12px] text-[#64748b] tabular-nums">--:--:--</span>
+        </div>
+      </header>
+
+      <!-- ============================================================
+           PIPELINE STATUS BAR
+      ============================================================ -->
+      <section class="glass-card rounded-xl p-5 mb-6">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-[9px] font-bold tracking-[0.14em] uppercase text-[#475569]">Pipeline Status</span>
+          <span id="pipeline-status" class="text-[10px] text-[#64748b]">Ready</span>
+        </div>
+        <div class="flex flex-wrap gap-3" id="pipeline-steps">
+          <div class="pipeline-step waiting" id="step-scout">
+            <span class="w-2 h-2 rounded-full bg-current"></span>
+            <span>1. Scout Search</span>
+          </div>
+          <svg class="w-4 h-4 text-[#334155]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          <div class="pipeline-step waiting" id="step-cipher">
+            <span class="w-2 h-2 rounded-full bg-current"></span>
+            <span>2. Cipher Rank</span>
+          </div>
+          <svg class="w-4 h-4 text-[#334155]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          <div class="pipeline-step waiting" id="step-scribe">
+            <span class="w-2 h-2 rounded-full bg-current"></span>
+            <span>3. Scribe Letters</span>
+          </div>
+          <svg class="w-4 h-4 text-[#334155]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          <div class="pipeline-step waiting" id="step-sentinel">
+            <span class="w-2 h-2 rounded-full bg-current"></span>
+            <span>4. Sentinel Review</span>
+          </div>
+          <svg class="w-4 h-4 text-[#334155]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          <div class="pipeline-step waiting" id="step-telegram">
+            <span class="w-2 h-2 rounded-full bg-current"></span>
+            <span>5. Telegram</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SEARCH CONTROLS
+      ============================================================ -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+        <!-- Search Box -->
+        <div class="lg:col-span-2 glass-card rounded-xl p-6">
+          <div class="text-[9px] font-bold tracking-[0.14em] uppercase text-[#22d3ee] mb-4">Job Search</div>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input id="job-query" type="text" value="python developer" placeholder="e.g. AI engineer, backend developer..."
+              class="flex-1 bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-3 text-[13px] text-[#f1f5f9] focus:border-[#22d3ee] focus:outline-none transition-colors" />
+            <select id="job-source" class="bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-3 text-[12px] text-[#94a3b8] focus:border-[#22d3ee] focus:outline-none">
+              <option value="all">All Sources</option>
+              <option value="remotive">Remotive (Remote)</option>
+              <option value="arbeitnow">Arbeitnow (Europe)</option>
+              <option value="adzuna">Adzuna (Global)</option>
+            </select>
+            <button id="btn-search" onclick="searchJobs()" class="btn-primary whitespace-nowrap">
+              Search Jobs
+            </button>
+          </div>
+
+          <div class="flex items-center gap-4 mt-4">
+            <label class="flex items-center gap-2 text-[11px] text-[#64748b]">
+              <span>Cover letters for top</span>
+              <select id="cover-count" class="bg-[#0f172a] border border-[#334155] rounded px-2 py-1 text-[11px] text-[#94a3b8]">
+                <option value="0">0 (search only)</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="5">5</option>
+              </select>
+              <span>jobs</span>
+            </label>
+            <button id="btn-full-hunt" onclick="fullJobHunt()" class="btn-primary whitespace-nowrap" style="background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.4); color: #4ade80;">
+              🚀 Full Hunt Pipeline
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="glass-card rounded-xl p-6">
+          <div class="text-[9px] font-bold tracking-[0.14em] uppercase text-[#22d3ee] mb-4">Statistics</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="stat-card">
+              <div class="text-[9px] font-bold uppercase text-[#475569] mb-1">Jobs Found</div>
+              <div id="stat-jobs" class="text-[20px] font-bold text-[#38bdf8]">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="text-[9px] font-bold uppercase text-[#475569] mb-1">Letters</div>
+              <div id="stat-letters" class="text-[20px] font-bold text-[#fbbf24]">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="text-[9px] font-bold uppercase text-[#475569] mb-1">Sources</div>
+              <div id="stat-sources" class="text-[20px] font-bold text-[#4ade80]">3</div>
+            </div>
+            <div class="stat-card">
+              <div class="text-[9px] font-bold uppercase text-[#475569] mb-1">Saved</div>
+              <div id="stat-saved" class="text-[20px] font-bold text-[#e879f9]">0</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           RESULTS AREA
+      ============================================================ -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        <!-- Job Listings (2/3) -->
+        <div class="xl:col-span-2">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-[9px] font-bold tracking-[0.14em] uppercase text-[#475569]">Job Listings</div>
+            <span id="result-count" class="text-[10px] text-[#64748b]">No search yet</span>
+          </div>
+          <div id="jobs-list" class="space-y-4">
+            <!-- Empty state -->
+            <div class="glass-card rounded-xl p-12 text-center">
+              <svg class="w-12 h-12 mx-auto text-[#334155] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0"/>
+              </svg>
+              <div class="text-[13px] text-[#475569] mb-2">No jobs searched yet</div>
+              <div class="text-[11px] text-[#334155]">Enter a search term above and click "Search Jobs" or run the full pipeline</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cover Letters + Activity (1/3) -->
+        <div>
+          <div class="text-[9px] font-bold tracking-[0.14em] uppercase text-[#475569] mb-4">Cover Letters</div>
+          <div id="cover-letters" class="space-y-4 mb-8">
+            <div class="glass-card rounded-xl p-6 text-center">
+              <div class="text-[11px] text-[#475569]">Run the full pipeline to generate cover letters</div>
+            </div>
+          </div>
+
+          <div class="text-[9px] font-bold tracking-[0.14em] uppercase text-[#475569] mb-4">Sentinel Review</div>
+          <div id="sentinel-review" class="glass-card rounded-xl p-6">
+            <div class="text-[11px] text-[#475569] text-center">Pending pipeline completion</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================================================================
+       JAVASCRIPT
+  ================================================================ -->
+  <script>
+  (function() {
+    var API_BASE = 'http://localhost:8000';
+    var isConnected = false;
+
+    // ── Clock ──
+    function updateClock() {
+      var now = new Date();
+      var t = now.toLocaleTimeString('en-GB');
+      var el1 = document.getElementById('sidebar-clock');
+      var el2 = document.getElementById('header-clock');
+      if (el1) el1.textContent = t;
+      if (el2) el2.textContent = t;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ── Sidebar toggle ──
+    window.toggleSidebar = function() {
+      var sb = document.getElementById('sidebar');
+      var ov = document.getElementById('sidebar-overlay');
+      sb.classList.toggle('open');
+      ov.classList.toggle('active');
+    };
+
+    // ── Check backend ──
+    async function checkBackend() {
+      try {
+        var resp = await fetch(API_BASE + '/api/health');
+        var data = await resp.json();
+        isConnected = data.status === 'ok';
+        document.getElementById('backend-status').textContent = isConnected ? '● Connected' : '○ Disconnected';
+        document.getElementById('backend-status').style.color = isConnected ? '#4ade80' : '#f87171';
+
+        // Load saved count
+        if (isConnected) {
+          var saved = await fetch(API_BASE + '/api/jobs/saved');
+          var savedData = await saved.json();
+          document.getElementById('stat-saved').textContent = (savedData.job_files || []).length + (savedData.cover_letters || []).length;
+        }
+      } catch (e) {
+        isConnected = false;
+        document.getElementById('backend-status').textContent = '○ Backend offline';
+        document.getElementById('backend-status').style.color = '#f87171';
+      }
+    }
+    checkBackend();
+
+    // ── Pipeline step update ──
+    function setPipelineStep(stepId, status) {
+      var el = document.getElementById(stepId);
+      if (!el) return;
+      el.classList.remove('active', 'done', 'waiting');
+      el.classList.add(status);
+    }
+
+    function resetPipeline() {
+      ['step-scout', 'step-cipher', 'step-scribe', 'step-sentinel', 'step-telegram'].forEach(function(id) {
+        setPipelineStep(id, 'waiting');
+      });
+      document.getElementById('pipeline-status').textContent = 'Ready';
+    }
+
+    // ── Render job cards ──
+    function renderJobs(jobs) {
+      var container = document.getElementById('jobs-list');
+      if (!jobs || jobs.length === 0) {
+        container.innerHTML = '<div class="glass-card rounded-xl p-8 text-center"><div class="text-[13px] text-[#475569]">No matching jobs found. Try different keywords.</div></div>';
+        return;
+      }
+
+      document.getElementById('stat-jobs').textContent = jobs.length;
+      document.getElementById('result-count').textContent = jobs.length + ' jobs found';
+
+      var html = '';
+      jobs.forEach(function(job, i) {
+        var sourceClass = 'source-' + (job.source || 'remotive').toLowerCase();
+        var tagsHtml = (job.tags || []).slice(0, 4).map(function(t) {
+          return '<span class="tag-pill" style="background:rgba(100,116,139,0.1); color:#94a3b8; border-color:rgba(100,116,139,0.3);">' + t + '</span>';
+        }).join(' ');
+
+        html += '<div class="job-card">' +
+          '<div class="flex items-start justify-between gap-4 mb-3">' +
+            '<div class="flex-1">' +
+              '<div class="text-[14px] font-bold text-[#f1f5f9] mb-1">' + (job.title || 'Untitled') + '</div>' +
+              '<div class="text-[12px] text-[#94a3b8]">' + (job.company || 'Unknown') + '</div>' +
+            '</div>' +
+            '<span class="tag-pill ' + sourceClass + '">' + (job.source || '') + '</span>' +
+          '</div>' +
+          '<div class="flex flex-wrap items-center gap-3 text-[11px] text-[#64748b] mb-3">' +
+            '<span>📍 ' + (job.location || 'Not specified') + '</span>' +
+            '<span>💼 ' + (job.type || '') + '</span>' +
+            '<span>💰 ' + (job.salary || 'Not specified') + '</span>' +
+            '<span>📅 ' + (job.posted || '') + '</span>' +
+          '</div>' +
+          (tagsHtml ? '<div class="flex flex-wrap gap-1.5 mb-3">' + tagsHtml + '</div>' : '') +
+          '<div class="text-[11px] text-[#475569] leading-relaxed mb-3" style="max-height:60px;overflow:hidden;">' +
+            (job.description_snippet || '').replace(/<[^>]*>/g, '').substring(0, 200) +
+          '</div>' +
+          '<div class="flex items-center gap-3">' +
+            (job.url ? '<a href="' + job.url + '" target="_blank" rel="noopener" class="btn-secondary text-[10px]">View Job →</a>' : '') +
+            '<button onclick="writeCoverLetter(\'' + (job.company || '').replace(/'/g, "\\'") + '\', \'' + (job.title || '').replace(/'/g, "\\'") + '\', \'' + (job.description_snippet || '').replace(/'/g, "\\'").substring(0, 200) + '\')" class="btn-secondary text-[10px]" style="color:#fbbf24; border-color:rgba(251,191,36,0.3);">✉️ Write Cover Letter</button>' +
+          '</div>' +
+        '</div>';
+      });
+
+      container.innerHTML = html;
+    }
+
+    // ── Render cover letters ──
+    function renderCoverLetters(letters) {
+      var container = document.getElementById('cover-letters');
+      if (!letters || letters.length === 0) return;
+
+      document.getElementById('stat-letters').textContent = letters.length;
+
+      var html = '';
+      letters.forEach(function(cl) {
+        html += '<div class="glass-card rounded-xl p-5">' +
+          '<div class="flex items-center justify-between mb-3">' +
+            '<div>' +
+              '<div class="text-[12px] font-bold text-[#fbbf24]">' + (cl.company || '') + '</div>' +
+              '<div class="text-[10px] text-[#64748b]">' + (cl.role || '') + '</div>' +
+            '</div>' +
+            '<span class="tag-pill" style="background:rgba(74,222,128,0.1); color:#4ade80; border-color:rgba(74,222,128,0.3);">Saved ✓</span>' +
+          '</div>' +
+          '<div class="cover-letter-box">' + (cl.letter || cl.cover_letter || '') + '</div>' +
+        '</div>';
+      });
+      container.innerHTML = html;
+    }
+
+    // ── Search Jobs (Scout only) ──
+    window.searchJobs = async function() {
+      if (!isConnected) { alert('Backend not connected. Start the server first.'); return; }
+
+      var query = document.getElementById('job-query').value.trim();
+      var source = document.getElementById('job-source').value;
+      if (!query) { alert('Enter a search query'); return; }
+
+      var btn = document.getElementById('btn-search');
+      btn.disabled = true;
+      btn.textContent = 'Searching...';
+      resetPipeline();
+      setPipelineStep('step-scout', 'active');
+      document.getElementById('pipeline-status').textContent = 'Scout searching...';
+
+      try {
+        var resp = await fetch(API_BASE + '/api/jobs/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: query, source: source, limit: 15 })
+        });
+        var data = await resp.json();
+
+        setPipelineStep('step-scout', 'done');
+        document.getElementById('pipeline-status').textContent = 'Search complete';
+
+        if (data.success) {
+          renderJobs(data.jobs || []);
+          if (data.sources) {
+            document.getElementById('stat-sources').textContent = data.sources.length;
+          }
+        } else {
+          document.getElementById('jobs-list').innerHTML =
+            '<div class="glass-card rounded-xl p-8 text-center"><div class="text-[13px] text-[#f87171]">Error: ' + (data.error || 'Search failed') + '</div></div>';
+        }
+      } catch (e) {
+        document.getElementById('jobs-list').innerHTML =
+          '<div class="glass-card rounded-xl p-8 text-center"><div class="text-[13px] text-[#f87171]">Network error: ' + e.message + '</div></div>';
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Search Jobs';
+    };
+
+    // ── Write single cover letter ──
+    window.writeCoverLetter = async function(company, role, description) {
+      if (!isConnected) { alert('Backend not connected.'); return; }
+
+      var confirmed = confirm('Write a cover letter for ' + role + ' at ' + company + '?\n\nThis uses Claude API (costs ~2 cents).');
+      if (!confirmed) return;
+
+      try {
+        var resp = await fetch(API_BASE + '/api/jobs/cover-letter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ company: company, role: role, job_description: description })
+        });
+        var data = await resp.json();
+
+        if (data.success) {
+          renderCoverLetters([data]);
+          alert('Cover letter saved to Desktop/GlassBox-Outputs/cover_letters/');
+        }
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    };
+
+    // ── Full Job Hunt Pipeline ──
+    window.fullJobHunt = async function() {
+      if (!isConnected) { alert('Backend not connected. Start the server first.'); return; }
+
+      var query = document.getElementById('job-query').value.trim();
+      var coverCount = parseInt(document.getElementById('cover-count').value);
+      if (!query) { alert('Enter a search query'); return; }
+
+      var confirmed = confirm(
+        'Run full job hunt pipeline?\n\n' +
+        '1. Scout searches all job boards\n' +
+        '2. Cipher ranks matches against your profile\n' +
+        '3. Scribe writes ' + coverCount + ' cover letters\n' +
+        '4. Sentinel reviews quality\n' +
+        '5. Summary sent to Telegram\n\n' +
+        'Estimated cost: ~$0.05-0.15 in API tokens'
+      );
+      if (!confirmed) return;
+
+      var btn = document.getElementById('btn-full-hunt');
+      btn.disabled = true;
+      btn.textContent = '⏳ Running pipeline...';
+      resetPipeline();
+
+      // Step 1: Scout
+      setPipelineStep('step-scout', 'active');
+      document.getElementById('pipeline-status').textContent = 'Step 1/5 — Scout searching job boards...';
+
+      try {
+        var resp = await fetch(API_BASE + '/api/jobs/hunt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: query, limit: 10, write_cover_letters: coverCount })
+        });
+        var data = await resp.json();
+
+        // Update pipeline display based on steps
+        if (data.steps) {
+          data.steps.forEach(function(step) {
+            if (step.agent === 'Scout') setPipelineStep('step-scout', 'done');
+            if (step.agent === 'Cipher') setPipelineStep('step-cipher', 'done');
+            if (step.agent === 'Scribe') setPipelineStep('step-scribe', 'done');
+            if (step.agent === 'Sentinel') setPipelineStep('step-sentinel', 'done');
+            if (step.agent === 'Atlas') setPipelineStep('step-telegram', 'done');
+          });
+        }
+
+        document.getElementById('pipeline-status').textContent = data.success ? 'Pipeline complete ✓' : 'Pipeline failed';
+
+        // Render results
+        if (data.jobs) renderJobs(data.jobs);
+        if (data.cover_letters) renderCoverLetters(data.cover_letters);
+
+        // Render sentinel review
+        if (data.sentinel_review) {
+          document.getElementById('sentinel-review').innerHTML =
+            '<div class="text-[9px] font-bold tracking-[0.12em] uppercase text-[#f87171] mb-3">Quality Review</div>' +
+            '<div class="text-[11px] text-[#cbd5e1] leading-relaxed whitespace-pre-wrap">' + data.sentinel_review + '</div>';
+        }
+
+        // Update stats
+        checkBackend();
+
+        if (data.success) {
+          document.getElementById('pipeline-status').textContent = '✓ Pipeline complete — results saved to Desktop';
+        }
+
+      } catch (e) {
+        document.getElementById('pipeline-status').textContent = 'Pipeline error: ' + e.message;
+      }
+
+      btn.disabled = false;
+      btn.textContent = '🚀 Full Hunt Pipeline';
+    };
+
+  })();
+  </script>
+
+</body>
+</html>

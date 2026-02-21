@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glass Box — GitHub Portfolio</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ["'JetBrains Mono'", "'Fira Code'", "'SF Mono'", "'Cascadia Code'", "ui-monospace", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+    .gh-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 300ms ease, transform 150ms ease;
+    }
+    .gh-card:hover {
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+    }
+    .lang-bar {
+      height: 8px;
+      border-radius: 4px;
+      transition: width 600ms ease;
+    }
+    .commit-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+      transition: background 150ms ease;
+    }
+    .commit-row:hover {
+      background: rgba(56, 189, 248, 0.04);
+    }
+    .stat-card {
+      background: rgba(15,23,42,0.7);
+      border: 1px solid rgba(51,65,85,0.5);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+    .btn-primary {
+      background: rgba(34,211,238,0.15);
+      border: 1px solid rgba(34,211,238,0.4);
+      color: #22d3ee;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+    .btn-primary:hover { background: rgba(34,211,238,0.25); border-color: #22d3ee; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary {
+      background: rgba(100,116,139,0.15);
+      border: 1px solid rgba(100,116,139,0.3);
+      color: #94a3b8;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+    .btn-secondary:hover { background: rgba(100,116,139,0.25); }
+    .lang-python { background: #3572A5; }
+    .lang-javascript { background: #f1e05a; }
+    .lang-html { background: #e34c26; }
+    .lang-css { background: #563d7c; }
+    .lang-typescript { background: #3178c6; }
+    .lang-jupyter { background: #DA5B0B; }
+    .lang-default { background: #64748b; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 1s linear infinite; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.3s ease forwards; }
+  </style>
+</head>
+<body class="font-mono antialiased">
+
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="sidebar">
+    <div class="px-5 py-5 border-b border-[#1e293b]">
+      <div class="flex items-center gap-3">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="24" height="24" rx="4" stroke="#38bdf8" stroke-width="1.5"/>
+          <rect x="6" y="6" width="16" height="16" rx="2" stroke="#38bdf8" stroke-width="1" fill="rgba(56,189,248,0.03)"/>
+          <circle cx="14" cy="14" r="3.5" fill="#38bdf8"/>
+        </svg>
+        <div>
+          <div class="text-[13px] font-bold tracking-wider text-[#f1f5f9]">GLASS BOX</div>
+          <div class="text-[10px] text-[#475569] tracking-wide">AI Orchestration</div>
+        </div>
+        <div class="ml-auto">
+          <span class="inline-block w-2 h-2 rounded-full bg-[#22d3ee] soft-blink" title="System Online"></span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <div class="px-3 pb-2 text-[9px] font-bold tracking-[0.14em] uppercase text-[#334155]">Navigate</div>
+
+      <a href="index.html" class="nav-item"><svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg><span>Command Center</span></a>
+      <a href="agents.html" class="nav-item"><svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg><span>Agent Registry</span></a>
+      <a href="trace.html" class="nav-item"><svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg><span>Execution Trace</span></a>
+      <a href="approvals.html" class="nav-item"><svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg><span>Approvals</span></a>
+      <a href="decisions.html" class="nav-item"><svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/></svg><span>Decisions</span></a>
+      <a href="audit.html" class="nav-item"><svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><span>Audit Log</span></a>
+      <a href="memory.html" class="nav-item"><svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/></svg><span>Memory</span></a>
+
+      <div class="px-3 pt-4 pb-2 text-[9px] font-bold tracking-[0.14em] uppercase text-[#334155]">Tools</div>
+
+      <a href="jobs.html" class="nav-item">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+        <span>NEXUS</span>
+      </a>
+
+      <!-- GitHub (active) -->
+      <a href="github.html" class="nav-item active">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        <span>GitHub</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(34,211,238,0.2)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]">NEW</span>
+      </a>
+
+      <a href="store.html" class="nav-item" data-page="store">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        <span>Store</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(251,191,36,0.2)] text-[#fbbf24] border border-[rgba(251,191,36,0.3)]">$</span>
+      </a>
+    </nav>
+
+    <div class="px-4 py-4 border-t border-[#1e293b]">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-block w-[6px] h-[6px] rounded-full bg-[#4ade80] shadow-[0_0_6px_rgba(74,222,128,0.5)]"></span>
+        <span class="text-[10px] font-bold tracking-[0.1em] text-[#4ade80]" id="status-text">SYSTEM NOMINAL</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] text-[#475569]">Local time</span>
+        <span id="sidebar-clock" class="text-[11px] text-[#94a3b8] tabular-nums">--:--:--</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content min-h-screen">
+
+    <button id="mobile-menu-btn" class="mobile-menu-btn fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#0f172a] border border-[#1e293b] text-[#94a3b8] lg:hidden" onclick="toggleSidebar()">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    </button>
+
+    <div class="p-6 lg:p-8 max-w-7xl mx-auto">
+
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="text-[9px] font-bold tracking-[0.14em] uppercase text-[#22d3ee] mb-1">GITHUB PORTFOLIO</div>
+        </div>
+        <h1 class="text-xl font-bold text-[#f1f5f9] tracking-tight">Living Portfolio Dashboard</h1>
+        <p class="text-[12px] text-[#64748b] mt-1">Connect your GitHub to auto-update your profile with real projects, commits, and language stats.</p>
+      </div>
+
+      <!-- Connect Section -->
+      <div id="connect-section" class="mb-8">
+        <div class="gh-card max-w-xl">
+          <div class="flex items-center gap-3 mb-4">
+            <svg class="w-6 h-6 text-[#f1f5f9]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <div>
+              <h2 class="text-sm font-bold text-[#f1f5f9]">Connect GitHub Account</h2>
+              <p class="text-[11px] text-[#64748b]">No token needed — works with public repos</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <input id="gh-username" type="text" placeholder="Enter GitHub username" 
+              class="flex-1 bg-[#0f172a] border border-[#1e293b] rounded-lg px-4 py-2.5 text-[12px] text-[#f1f5f9] placeholder-[#475569] focus:outline-none focus:border-[#38bdf8]" />
+            <button onclick="connectGitHub()" class="btn-primary" id="connect-btn">Connect</button>
+          </div>
+          <p id="connect-status" class="text-[10px] mt-2 text-[#475569] hidden"></p>
+        </div>
+      </div>
+
+      <!-- GitHub Profile Card (hidden until connected) -->
+      <div id="profile-section" class="hidden mb-8 fade-in">
+        <div class="gh-card">
+          <div class="flex items-start gap-5">
+            <img id="gh-avatar" src="" alt="Avatar" class="w-16 h-16 rounded-full border-2 border-[#1e293b]" />
+            <div class="flex-1">
+              <div class="flex items-center gap-3">
+                <h2 id="gh-name" class="text-lg font-bold text-[#f1f5f9]"></h2>
+                <a id="gh-link" href="#" target="_blank" class="text-[11px] text-[#38bdf8] hover:text-[#22d3ee]">View on GitHub →</a>
+              </div>
+              <p id="gh-bio" class="text-[12px] text-[#94a3b8] mt-1"></p>
+              <div class="flex items-center gap-6 mt-3">
+                <div class="text-center"><span id="gh-repos-count" class="text-lg font-bold text-[#f1f5f9]">0</span><div class="text-[9px] text-[#64748b] uppercase tracking-wider">Repos</div></div>
+                <div class="text-center"><span id="gh-followers" class="text-lg font-bold text-[#f1f5f9]">0</span><div class="text-[9px] text-[#64748b] uppercase tracking-wider">Followers</div></div>
+                <div class="text-center"><span id="gh-following" class="text-lg font-bold text-[#f1f5f9]">0</span><div class="text-[9px] text-[#64748b] uppercase tracking-wider">Following</div></div>
+                <div class="text-center"><span id="gh-member-since" class="text-sm font-bold text-[#f1f5f9]"></span><div class="text-[9px] text-[#64748b] uppercase tracking-wider">Member Since</div></div>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="syncProfile()" class="btn-primary" title="Auto-update your Glass Box profile with GitHub data">⟳ Sync Profile</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div id="stats-section" class="hidden mb-8 fade-in">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="stat-card">
+            <div id="stat-commits" class="text-2xl font-bold text-[#22d3ee]">0</div>
+            <div class="text-[10px] text-[#64748b] uppercase tracking-wider mt-1">Recent Commits</div>
+          </div>
+          <div class="stat-card">
+            <div id="stat-active-repos" class="text-2xl font-bold text-[#4ade80]">0</div>
+            <div class="text-[10px] text-[#64748b] uppercase tracking-wider mt-1">Active Repos</div>
+          </div>
+          <div class="stat-card">
+            <div id="stat-prs" class="text-2xl font-bold text-[#a78bfa]">0</div>
+            <div class="text-[10px] text-[#64748b] uppercase tracking-wider mt-1">Pull Requests</div>
+          </div>
+          <div class="stat-card">
+            <div id="stat-active-days" class="text-2xl font-bold text-[#fbbf24]">0</div>
+            <div class="text-[10px] text-[#64748b] uppercase tracking-wider mt-1">Active Days</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-column: Repos + Languages -->
+      <div id="main-content" class="hidden fade-in">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+          <!-- Repositories (2/3 width) -->
+          <div class="lg:col-span-2">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">Repositories</h3>
+              <button onclick="loadRepos()" class="btn-secondary text-[10px]">↻ Refresh</button>
+            </div>
+            <div id="repos-container" class="space-y-3">
+              <div class="text-[12px] text-[#475569]">Loading repositories...</div>
+            </div>
+          </div>
+
+          <!-- Languages (1/3 width) -->
+          <div>
+            <h3 class="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider mb-4">Language Breakdown</h3>
+            <div class="gh-card">
+              <!-- Language bar -->
+              <div id="lang-bar-container" class="flex rounded-full overflow-hidden h-3 mb-4 bg-[#1e293b]"></div>
+              <div id="lang-list" class="space-y-2">
+                <div class="text-[12px] text-[#475569]">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Commits -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">Recent Commits</h3>
+            <button onclick="loadCommits()" class="btn-secondary text-[10px]">↻ Refresh</button>
+          </div>
+          <div class="gh-card p-0 overflow-hidden">
+            <div id="commits-container">
+              <div class="p-4 text-[12px] text-[#475569]">Loading commits...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sync Status -->
+      <div id="sync-status" class="hidden mb-6">
+        <div class="gh-card border-[rgba(74,222,128,0.3)]">
+          <div class="flex items-center gap-3">
+            <span class="text-[#4ade80] text-lg">✓</span>
+            <div>
+              <div class="text-[12px] font-bold text-[#4ade80]">Profile Synced</div>
+              <div id="sync-details" class="text-[11px] text-[#64748b]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+  (function() {
+    const API = 'http://localhost:8000';
+
+    // ── Sidebar ────────────────────────────────────────────
+    window.toggleSidebar = function() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebar-overlay').classList.toggle('active');
+    };
+
+    // Clock
+    setInterval(() => {
+      const now = new Date();
+      const el = document.getElementById('sidebar-clock');
+      if (el) el.textContent = now.toLocaleTimeString('en-US', { hour12: false });
+    }, 1000);
+
+    // ── Language colors ────────────────────────────────────
+    const LANG_COLORS = {
+      'Python': '#3572A5', 'JavaScript': '#f1e05a', 'TypeScript': '#3178c6',
+      'HTML': '#e34c26', 'CSS': '#563d7c', 'Jupyter Notebook': '#DA5B0B',
+      'Shell': '#89e051', 'Java': '#b07219', 'C++': '#f34b7d', 'C': '#555555',
+      'Go': '#00ADD8', 'Rust': '#dea584', 'Ruby': '#701516', 'PHP': '#4F5D95',
+      'Swift': '#F05138', 'Kotlin': '#A97BFF', 'Dart': '#00B4AB',
+    };
+    function langColor(lang) { return LANG_COLORS[lang] || '#64748b'; }
+
+    // ── Check if already connected ─────────────────────────
+    async function checkConnection() {
+      try {
+        const resp = await fetch(`${API}/api/github/profile`);
+        const data = await resp.json();
+        if (data.success) {
+          showProfile(data.profile);
+          loadAll();
+        }
+      } catch(e) {}
+    }
+    checkConnection();
+
+    // ── Connect ────────────────────────────────────────────
+    window.connectGitHub = async function() {
+      const input = document.getElementById('gh-username');
+      const btn = document.getElementById('connect-btn');
+      const status = document.getElementById('connect-status');
+      const username = input.value.trim();
+      if (!username) { input.focus(); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Connecting...';
+      status.classList.remove('hidden');
+      status.textContent = 'Connecting to GitHub...';
+      status.className = 'text-[10px] mt-2 text-[#94a3b8]';
+
+      try {
+        const resp = await fetch(`${API}/api/github/connect`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username }),
+        });
+        const data = await resp.json();
+        if (data.success) {
+          status.textContent = `✓ Connected as ${data.profile.username}`;
+          status.className = 'text-[10px] mt-2 text-[#4ade80]';
+          showProfile(data.profile);
+          loadAll();
+        } else {
+          status.textContent = `✗ ${data.error}`;
+          status.className = 'text-[10px] mt-2 text-[#f87171]';
+        }
+      } catch(e) {
+        status.textContent = `✗ Connection failed: ${e.message}`;
+        status.className = 'text-[10px] mt-2 text-[#f87171]';
+      }
+      btn.disabled = false;
+      btn.textContent = 'Connect';
+    };
+
+    // ── Show Profile ───────────────────────────────────────
+    function showProfile(p) {
+      document.getElementById('gh-avatar').src = p.avatar;
+      document.getElementById('gh-name').textContent = p.name || p.username;
+      document.getElementById('gh-bio').textContent = p.bio || '';
+      document.getElementById('gh-link').href = p.url;
+      document.getElementById('gh-repos-count').textContent = p.public_repos;
+      document.getElementById('gh-followers').textContent = p.followers;
+      document.getElementById('gh-following').textContent = p.following;
+      document.getElementById('gh-member-since').textContent = p.created_at;
+      document.getElementById('gh-username').value = p.username;
+
+      document.getElementById('profile-section').classList.remove('hidden');
+      document.getElementById('stats-section').classList.remove('hidden');
+      document.getElementById('main-content').classList.remove('hidden');
+    }
+
+    // ── Load All Data ──────────────────────────────────────
+    function loadAll() {
+      loadRepos();
+      loadLanguages();
+      loadCommits();
+      loadActivity();
+    }
+
+    // ── Repos ──────────────────────────────────────────────
+    window.loadRepos = async function() {
+      const container = document.getElementById('repos-container');
+      container.innerHTML = '<div class="text-[12px] text-[#475569]">Loading...</div>';
+      try {
+        const resp = await fetch(`${API}/api/github/repos`);
+        const data = await resp.json();
+        if (!data.success || !data.repos.length) {
+          container.innerHTML = '<div class="text-[12px] text-[#475569]">No repositories found.</div>';
+          return;
+        }
+        container.innerHTML = data.repos.map(r => `
+          <div class="gh-card" style="padding: 16px;">
+            <div class="flex items-start justify-between">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <a href="${r.url}" target="_blank" class="text-[13px] font-bold text-[#38bdf8] hover:text-[#22d3ee] truncate">${r.name}</a>
+                  ${r.is_fork ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-[rgba(100,116,139,0.2)] text-[#94a3b8] border border-[rgba(100,116,139,0.3)]">FORK</span>' : ''}
+                </div>
+                <p class="text-[11px] text-[#94a3b8] mt-1 line-clamp-2">${r.description || 'No description'}</p>
+                <div class="flex items-center gap-4 mt-2">
+                  ${r.language ? `<span class="flex items-center gap-1.5 text-[10px] text-[#94a3b8]"><span class="inline-block w-2.5 h-2.5 rounded-full" style="background:${langColor(r.language)}"></span>${r.language}</span>` : ''}
+                  ${r.stars > 0 ? `<span class="text-[10px] text-[#94a3b8]">⭐ ${r.stars}</span>` : ''}
+                  ${r.forks > 0 ? `<span class="text-[10px] text-[#94a3b8]">🔀 ${r.forks}</span>` : ''}
+                  <span class="text-[10px] text-[#475569]">Updated ${r.updated}</span>
+                </div>
+                ${r.topics && r.topics.length > 0 ? `<div class="flex flex-wrap gap-1 mt-2">${r.topics.map(t => `<span class="inline-block px-2 py-0.5 rounded-full text-[9px] bg-[rgba(56,189,248,0.1)] text-[#38bdf8] border border-[rgba(56,189,248,0.2)]">${t}</span>`).join('')}</div>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch(e) {
+        container.innerHTML = `<div class="text-[12px] text-[#f87171]">Error: ${e.message}</div>`;
+      }
+    };
+
+    // ── Languages ──────────────────────────────────────────
+    async function loadLanguages() {
+      const bar = document.getElementById('lang-bar-container');
+      const list = document.getElementById('lang-list');
+      try {
+        const resp = await fetch(`${API}/api/github/languages`);
+        const data = await resp.json();
+        if (!data.success) { list.innerHTML = '<div class="text-[11px] text-[#475569]">Not available</div>'; return; }
+
+        // Bar
+        bar.innerHTML = data.languages.map(l =>
+          `<div style="width:${l.percentage}%; background:${langColor(l.language)}" title="${l.language}: ${l.percentage}%"></div>`
+        ).join('');
+
+        // List
+        list.innerHTML = data.languages.map(l => `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="inline-block w-2.5 h-2.5 rounded-full" style="background:${langColor(l.language)}"></span>
+              <span class="text-[11px] text-[#e2e8f0]">${l.language}</span>
+            </div>
+            <span class="text-[10px] text-[#64748b]">${l.percentage}% · ${l.repos} repo${l.repos>1?'s':''}</span>
+          </div>
+        `).join('');
+      } catch(e) {
+        list.innerHTML = `<div class="text-[11px] text-[#f87171]">${e.message}</div>`;
+      }
+    }
+
+    // ── Commits ────────────────────────────────────────────
+    window.loadCommits = async function() {
+      const container = document.getElementById('commits-container');
+      container.innerHTML = '<div class="p-4 text-[12px] text-[#475569]">Loading...</div>';
+      try {
+        const resp = await fetch(`${API}/api/github/commits`);
+        const data = await resp.json();
+        if (!data.success || !data.commits.length) {
+          container.innerHTML = '<div class="p-4 text-[12px] text-[#475569]">No recent commits.</div>';
+          return;
+        }
+        container.innerHTML = data.commits.map(c => `
+          <div class="commit-row">
+            <code class="text-[10px] text-[#818cf8] bg-[rgba(129,140,248,0.1)] px-1.5 py-0.5 rounded font-mono">${c.sha}</code>
+            <a href="${c.url}" target="_blank" class="flex-1 text-[11px] text-[#e2e8f0] hover:text-[#38bdf8] truncate">${c.message}</a>
+            <span class="text-[10px] text-[#38bdf8] whitespace-nowrap">${c.repo}</span>
+            <span class="text-[10px] text-[#475569] whitespace-nowrap">${c.date}</span>
+          </div>
+        `).join('');
+      } catch(e) {
+        container.innerHTML = `<div class="p-4 text-[12px] text-[#f87171]">${e.message}</div>`;
+      }
+    };
+
+    // ── Activity Stats ─────────────────────────────────────
+    async function loadActivity() {
+      try {
+        const resp = await fetch(`${API}/api/github/activity`);
+        const data = await resp.json();
+        if (data.success) {
+          const s = data.summary;
+          document.getElementById('stat-commits').textContent = s.commits;
+          document.getElementById('stat-active-repos').textContent = s.repos_active.length;
+          document.getElementById('stat-prs').textContent = s.pull_requests;
+          document.getElementById('stat-active-days').textContent = s.active_days;
+        }
+      } catch(e) {}
+    }
+
+    // ── Sync Profile ───────────────────────────────────────
+    window.syncProfile = async function() {
+      const syncDiv = document.getElementById('sync-status');
+      syncDiv.classList.remove('hidden');
+      document.getElementById('sync-details').textContent = 'Syncing GitHub data to your profile...';
+      syncDiv.querySelector('.gh-card').style.borderColor = 'rgba(34,211,238,0.3)';
+      syncDiv.querySelector('span:first-child').textContent = '⟳';
+      syncDiv.querySelector('span:first-child').className = 'text-[#22d3ee] text-lg spinner';
+
+      try {
+        const resp = await fetch(`${API}/api/github/sync-profile`, { method: 'POST' });
+        const data = await resp.json();
+        if (data.success) {
+          syncDiv.querySelector('.gh-card').style.borderColor = 'rgba(74,222,128,0.3)';
+          syncDiv.querySelector('span:first-child').textContent = '✓';
+          syncDiv.querySelector('span:first-child').className = 'text-[#4ade80] text-lg';
+          syncDiv.querySelector('.text-\\[12px\\]').className = 'text-[12px] font-bold text-[#4ade80]';
+          syncDiv.querySelector('.text-\\[12px\\]').textContent = 'Profile Synced!';
+          document.getElementById('sync-details').textContent = `Updated: ${data.synced_fields.join(', ')}`;
+        } else {
+          document.getElementById('sync-details').textContent = `Error: ${data.error}`;
+        }
+      } catch(e) {
+        document.getElementById('sync-details').textContent = `Error: ${e.message}`;
+      }
+    };
+
+    // Enter key to connect
+    document.getElementById('gh-username').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') connectGitHub();
+    });
+
+  })();
+  </script>
+</body>
+</html>

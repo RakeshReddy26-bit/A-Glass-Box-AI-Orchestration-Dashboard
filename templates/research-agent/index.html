@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Research Agent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0a0a0a; color: #e2e8f0; min-height: 100vh; }
+    .card { background: #111; border: 1px solid #1e293b; border-radius: 12px; }
+    .gradient-text { background: linear-gradient(135deg, #4ade80, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .btn { font-weight: 600; padding: 10px 24px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: none; color: white; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-research { background: linear-gradient(135deg, #4ade80, #22c55e); }
+    .btn-research:hover { box-shadow: 0 4px 20px rgba(74, 222, 128, 0.4); }
+    .btn-competitor { background: linear-gradient(135deg, #818cf8, #6366f1); }
+    .btn-competitor:hover { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
+    .btn-trend { background: linear-gradient(135deg, #22d3ee, #06b6d4); }
+    .btn-trend:hover { box-shadow: 0 4px 20px rgba(34, 211, 238, 0.4); }
+    .btn-swot { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .btn-swot:hover { box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4); }
+    textarea, input[type="text"] { background: #0a0a0a; border: 1px solid #1e293b; border-radius: 8px; color: white; }
+    textarea:focus, input:focus { outline: none; border-color: #4ade80; }
+    .output-area { white-space: pre-wrap; line-height: 1.8; font-size: 14px; }
+    #loading { display: none; }
+    .spinner { border: 3px solid #1e293b; border-top: 3px solid #4ade80; border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; color: #64748b; transition: all 0.2s; }
+    .tab.active { border-color: #4ade80; color: #4ade80; }
+    .tab:hover { color: #e2e8f0; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    select { background: #0a0a0a; border: 1px solid #1e293b; border-radius: 8px; color: #94a3b8; padding: 10px 16px; }
+  </style>
+</head>
+<body class="p-6">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold mb-2"><span class="gradient-text">AI Research Agent</span></h1>
+      <p class="text-gray-400">Market research, competitor analysis, and trend reports — powered by Claude AI + real news data</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-6 border-b border-[#1e293b] overflow-x-auto">
+      <div class="tab active" onclick="switchTab('research')">📊 Research</div>
+      <div class="tab" onclick="switchTab('competitor')">🏢 Competitors</div>
+      <div class="tab" onclick="switchTab('trends')">📈 Trends</div>
+      <div class="tab" onclick="switchTab('swot')">🎯 SWOT</div>
+    </div>
+
+    <!-- Research Tab -->
+    <div id="tab-research" class="tab-panel active">
+      <div class="card p-6 mb-6">
+        <h3 class="font-bold text-sm text-gray-400 mb-4">MARKET RESEARCH</h3>
+        <input id="research-topic" type="text" placeholder="Topic: e.g. AI agent market 2026, EV charging infrastructure..."
+          class="w-full px-4 py-3 mb-3" />
+        <div class="flex gap-3 mb-4">
+          <select id="research-depth">
+            <option value="brief">Brief (faster)</option>
+            <option value="detailed" selected>Detailed</option>
+          </select>
+          <select id="research-news-count">
+            <option value="5">5 articles</option>
+            <option value="10" selected>10 articles</option>
+            <option value="15">15 articles</option>
+          </select>
+        </div>
+        <button onclick="runResearch()" class="btn btn-research">📊 Generate Report</button>
+      </div>
+    </div>
+
+    <!-- Competitor Tab -->
+    <div id="tab-competitor" class="tab-panel">
+      <div class="card p-6 mb-6">
+        <h3 class="font-bold text-sm text-gray-400 mb-4">COMPETITOR ANALYSIS</h3>
+        <input id="comp-companies" type="text" placeholder="Companies (comma-separated): e.g. OpenAI, Anthropic, Google"
+          class="w-full px-4 py-3 mb-3" />
+        <input id="comp-focus" type="text" placeholder="Focus area: e.g. pricing, AI models, developer tools"
+          class="w-full px-4 py-3 mb-3" />
+        <label class="flex items-center gap-2 text-sm text-gray-400 mb-4">
+          <input type="checkbox" id="comp-news" checked> Include recent news context
+        </label>
+        <button onclick="runCompetitor()" class="btn btn-competitor">🏢 Compare</button>
+      </div>
+    </div>
+
+    <!-- Trends Tab -->
+    <div id="tab-trends" class="tab-panel">
+      <div class="card p-6 mb-6">
+        <h3 class="font-bold text-sm text-gray-400 mb-4">TREND REPORT</h3>
+        <input id="trend-topic" type="text" placeholder="Topic: e.g. AI agents, sustainable tech, fintech Europe..."
+          class="w-full px-4 py-3 mb-3" />
+        <select id="trend-count" class="mb-4">
+          <option value="10">10 articles</option>
+          <option value="15" selected>15 articles</option>
+          <option value="20">20 articles</option>
+        </select>
+        <button onclick="runTrends()" class="btn btn-trend">📈 Find Trends</button>
+      </div>
+    </div>
+
+    <!-- SWOT Tab -->
+    <div id="tab-swot" class="tab-panel">
+      <div class="card p-6 mb-6">
+        <h3 class="font-bold text-sm text-gray-400 mb-4">SWOT ANALYSIS</h3>
+        <input id="swot-subject" type="text" placeholder="Company or product: e.g. Tesla, Shopify, your startup..."
+          class="w-full px-4 py-3 mb-3" />
+        <textarea id="swot-context" placeholder="Optional context: market conditions, your perspective..."
+          rows="3" class="w-full px-4 py-3 mb-4"></textarea>
+        <button onclick="runSWOT()" class="btn btn-swot">🎯 Analyze</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-10">
+      <div class="spinner mx-auto mb-3"></div>
+      <p class="text-gray-400" id="loading-text">Researching...</p>
+    </div>
+
+    <!-- Output -->
+    <div id="output" class="card p-6 hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold gradient-text text-lg" id="output-title">Report</h3>
+        <div class="flex gap-2">
+          <button onclick="copyOutput()" class="text-xs text-gray-400 hover:text-white border border-[#1e293b] rounded px-3 py-1.5">📋 Copy</button>
+          <button onclick="summarize()" class="text-xs text-gray-400 hover:text-white border border-[#1e293b] rounded px-3 py-1.5">📝 Summarize</button>
+        </div>
+      </div>
+      <div id="output-meta" class="text-xs text-gray-500 mb-4"></div>
+      <div class="output-area text-gray-300" id="output-content"></div>
+    </div>
+
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+      document.getElementById(`tab-${tab}`).classList.add('active');
+    }
+
+    function showLoading(text) {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('loading-text').textContent = text;
+      document.getElementById('output').classList.add('hidden');
+    }
+    function hideLoading() { document.getElementById('loading').style.display = 'none'; }
+
+    function showOutput(title, content, meta = '') {
+      hideLoading();
+      document.getElementById('output-title').textContent = title;
+      document.getElementById('output-content').textContent = content;
+      document.getElementById('output-meta').textContent = meta;
+      document.getElementById('output').classList.remove('hidden');
+    }
+
+    function copyOutput() {
+      navigator.clipboard.writeText(document.getElementById('output-content').textContent);
+    }
+
+    async function summarize() {
+      const text = document.getElementById('output-content').textContent;
+      if (!text) return;
+      showLoading('Generating executive summary...');
+      try {
+        const resp = await fetch('/api/summary', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ text }),
+        });
+        const data = await resp.json();
+        showOutput('Executive Summary', data.summary, `Original: ${data.original_length} chars → Summary: ${data.summary_length} chars`);
+      } catch (e) { hideLoading(); alert('Error: ' + e.message); }
+    }
+
+    async function runResearch() {
+      const topic = document.getElementById('research-topic').value;
+      if (!topic) return alert('Enter a research topic');
+      const depth = document.getElementById('research-depth').value;
+      const news_count = parseInt(document.getElementById('research-news-count').value);
+
+      showLoading(`Researching "${topic}"... Fetching ${news_count} articles + AI analysis`);
+      try {
+        const resp = await fetch('/api/research', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ topic, depth, news_count }),
+        });
+        const data = await resp.json();
+        showOutput(`Market Research: ${topic}`, data.report, `Based on ${data.news_articles} news articles`);
+      } catch (e) { hideLoading(); alert('Error: ' + e.message); }
+    }
+
+    async function runCompetitor() {
+      const companiesRaw = document.getElementById('comp-companies').value;
+      if (!companiesRaw) return alert('Enter companies to compare');
+      const companies = companiesRaw.split(',').map(c => c.trim()).filter(Boolean);
+      const focus = document.getElementById('comp-focus').value || 'overall';
+      const include_news = document.getElementById('comp-news').checked;
+
+      showLoading(`Analyzing ${companies.join(' vs ')}...`);
+      try {
+        const resp = await fetch('/api/competitor', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ companies, focus, include_news }),
+        });
+        const data = await resp.json();
+        showOutput(`Competitor Analysis: ${companies.join(' vs ')}`, data.report);
+      } catch (e) { hideLoading(); alert('Error: ' + e.message); }
+    }
+
+    async function runTrends() {
+      const topic = document.getElementById('trend-topic').value;
+      if (!topic) return alert('Enter a topic');
+      const news_count = parseInt(document.getElementById('trend-count').value);
+
+      showLoading(`Scanning ${news_count} articles for trends in "${topic}"...`);
+      try {
+        const resp = await fetch('/api/trends', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ topic, news_count }),
+        });
+        const data = await resp.json();
+        if (!data.success) return showOutput('Error', data.error || 'No data found');
+        showOutput(`Trend Report: ${topic}`, data.report, `Analyzed ${data.news_articles} articles`);
+      } catch (e) { hideLoading(); alert('Error: ' + e.message); }
+    }
+
+    async function runSWOT() {
+      const subject = document.getElementById('swot-subject').value;
+      if (!subject) return alert('Enter a subject');
+      const context = document.getElementById('swot-context').value;
+
+      showLoading(`SWOT analysis for "${subject}"...`);
+      try {
+        const resp = await fetch('/api/swot', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ subject, context }),
+        });
+        const data = await resp.json();
+        showOutput(`SWOT Analysis: ${subject}`, data.report);
+      } catch (e) { hideLoading(); alert('Error: ' + e.message); }
+    }
+
+    // Enter key handlers
+    document.getElementById('research-topic')?.addEventListener('keydown', e => { if (e.key === 'Enter') runResearch(); });
+    document.getElementById('trend-topic')?.addEventListener('keydown', e => { if (e.key === 'Enter') runTrends(); });
+    document.getElementById('swot-subject')?.addEventListener('keydown', e => { if (e.key === 'Enter') runSWOT(); });
+  </script>
+</body>
+</html>

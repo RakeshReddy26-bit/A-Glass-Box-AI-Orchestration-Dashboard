@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Content Writer Agent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0a0a0a; color: #e2e8f0; min-height: 100vh; }
+    .card { background: #111; border: 1px solid #1e293b; border-radius: 12px; }
+    .gradient-text { background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .btn { font-weight: 600; padding: 10px 24px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: none; color: white; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-blog { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .btn-blog:hover { box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4); }
+    .btn-social { background: linear-gradient(135deg, #818cf8, #6366f1); }
+    .btn-social:hover { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
+    .btn-seo { background: linear-gradient(135deg, #4ade80, #22c55e); }
+    .btn-seo:hover { box-shadow: 0 4px 20px rgba(74, 222, 128, 0.4); }
+    .btn-rewrite { background: linear-gradient(135deg, #22d3ee, #06b6d4); }
+    .btn-rewrite:hover { box-shadow: 0 4px 20px rgba(34, 211, 238, 0.4); }
+    .tone-chip { padding: 4px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid #1e293b; transition: all 0.2s; background: transparent; color: #94a3b8; }
+    .tone-chip.active { background: rgba(251, 191, 36, 0.15); border-color: #fbbf24; color: #fbbf24; }
+    .tone-chip:hover { border-color: #fbbf24; }
+    textarea { background: #0a0a0a; border: 1px solid #1e293b; border-radius: 8px; color: white; resize: vertical; }
+    textarea:focus { outline: none; border-color: #fbbf24; }
+    input { background: #0a0a0a; border: 1px solid #1e293b; border-radius: 8px; color: white; }
+    input:focus { outline: none; border-color: #fbbf24; }
+    .output-area { white-space: pre-wrap; line-height: 1.8; font-size: 14px; }
+    #loading { display: none; }
+    .spinner { border: 3px solid #1e293b; border-top: 3px solid #fbbf24; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; color: #64748b; transition: all 0.2s; }
+    .tab.active { border-color: #fbbf24; color: #fbbf24; }
+    .tab:hover { color: #e2e8f0; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+  </style>
+</head>
+<body class="p-6">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold mb-2"><span class="gradient-text">AI Content Writer</span></h1>
+      <p class="text-gray-400">Blog posts, social media, SEO optimization — powered by Claude AI</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-6 border-b border-[#1e293b] overflow-x-auto">
+      <div class="tab active" onclick="switchTab('blog')">📝 Blog Post</div>
+      <div class="tab" onclick="switchTab('social')">📱 Social Media</div>
+      <div class="tab" onclick="switchTab('seo')">🔍 SEO Analysis</div>
+      <div class="tab" onclick="switchTab('rewrite')">🔄 Rewrite</div>
+    </div>
+
+    <!-- Blog Tab -->
+    <div id="tab-blog" class="tab-panel active">
+      <div class="card p-6 mb-6">
+        <h3 class="font-bold text-sm text-gray-400 mb-4">GENERATE BLOG POST</h3>
+        <input id="blog-topic" type="text" placeholder="Topic: e.g. Why AI agents will replace SaaS tools in 2026"
+          class="w-full px-4 py-3 mb-3" />
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <input id="blog-keywords" type="text" placeholder="SEO keywords (comma-separated)" class="px-4 py-3" />
+          <div class="flex gap-3 items-center">
+            <label class="text-xs text-gray-500">Words:</label>
+            <input id="blog-wordcount" type="number" value="800" min="300" max="3000" class="w-24 px-3 py-3" />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="text-xs text-gray-500 block mb-2">Tone:</label>
+          <div class="flex flex-wrap gap-2" id="tone-chips">
+            <span class="tone-chip active" data-tone="professional">Professional</span>
+            <span class="tone-chip" data-tone="casual">Casual</span>
+            <span class="tone-chip" data-tone="technical">Technical</span>
+            <span class="tone-chip" data-tone="storytelling">Storytelling</span>
+            <span class="tone-chip" data-tone="persuasive">Persuasive</span>
+            <span class="tone-chip" data-tone="witty">Witty</span>
+          </div>
+        </div>
+        <textarea id="blog-outline" placeholder="Optional: Paste an outline or key points..." rows="3" class="w-full px-4 py-3 mb-4"></textarea>
+        <button onclick="generateBlog()" class="btn btn-blog">✍️ Generate Blog Post</button>
+      </div>
+    </div>
+
+    <!-- Social Tab -->
+    <div id="tab-social" class="tab-panel">
+      <div class="card p-6 mb-6">
+        <h3 class="font-bold text-sm text-gray-400 mb-4">GENERATE SOCIAL MEDIA POSTS</h3>
+        <textarea id="social-text" placeholder="Paste your blog post or content here..." rows="8" class="w-full px-4 py-3 mb-3"></textarea>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" class="platform-check" value="twitter" checked> Twitter/X
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" class="platform-check" value="linkedin" checked> LinkedIn
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" class="platform-check" value="instagram" checked> Instagram
+          </label>
+        </div>
+        <button onclick="generateSocial()" class="btn btn-social">📱 Generate Posts</button>
+      </div>
+    </div>
+
+    <!-- SEO Tab -->
+    <div id="tab-seo" class="tab-panel">
+      <div class="card p-6 mb-6">
+        <h3 class="font-bold text-sm text-gray-400 mb-4">SEO CONTENT ANALYSIS</h3>
+        <textarea id="seo-content" placeholder="Paste your article content..." rows="8" class="w-full px-4 py-3 mb-3"></textarea>
+        <input id="seo-keywords" type="text" placeholder="Target keywords (comma-separated)" class="w-full px-4 py-3 mb-4" />
+        <button onclick="analyzeSEO()" class="btn btn-seo">🔍 Analyze SEO</button>
+      </div>
+    </div>
+
+    <!-- Rewrite Tab -->
+    <div id="tab-rewrite" class="tab-panel">
+      <div class="card p-6 mb-6">
+        <h3 class="font-bold text-sm text-gray-400 mb-4">REWRITE IN DIFFERENT TONE</h3>
+        <textarea id="rewrite-text" placeholder="Paste content to rewrite..." rows="8" class="w-full px-4 py-3 mb-3"></textarea>
+        <div class="mb-4">
+          <label class="text-xs text-gray-500 block mb-2">Target Tone:</label>
+          <select id="rewrite-tone" class="bg-[#0a0a0a] border border-[#1e293b] rounded-lg px-4 py-3 text-gray-300">
+            <option value="professional">Professional</option>
+            <option value="casual" selected>Casual</option>
+            <option value="technical">Technical</option>
+            <option value="storytelling">Storytelling</option>
+            <option value="persuasive">Persuasive</option>
+            <option value="witty">Witty</option>
+          </select>
+        </div>
+        <button onclick="rewriteContent()" class="btn btn-rewrite">🔄 Rewrite</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-8">
+      <div class="spinner mx-auto mb-3"></div>
+      <p class="text-gray-400" id="loading-text">Generating content...</p>
+    </div>
+
+    <!-- Output -->
+    <div id="output" class="card p-6 hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold gradient-text" id="output-title">Output</h3>
+        <button onclick="copyOutput()" class="text-xs text-gray-400 hover:text-white border border-[#1e293b] rounded px-3 py-1.5">📋 Copy</button>
+      </div>
+      <div class="output-area text-gray-300" id="output-content"></div>
+    </div>
+
+  </div>
+
+  <script>
+    let selectedTone = 'professional';
+
+    // Tone chips
+    document.querySelectorAll('.tone-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        selectedTone = chip.dataset.tone;
+      });
+    });
+
+    // Tabs
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+      document.getElementById(`tab-${tab}`).classList.add('active');
+    }
+
+    function showLoading(text) {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('loading-text').textContent = text;
+      document.getElementById('output').classList.add('hidden');
+    }
+
+    function hideLoading() { document.getElementById('loading').style.display = 'none'; }
+
+    function showOutput(title, content) {
+      hideLoading();
+      document.getElementById('output-title').textContent = title;
+      document.getElementById('output-content').textContent = content;
+      document.getElementById('output').classList.remove('hidden');
+    }
+
+    function copyOutput() {
+      const text = document.getElementById('output-content').textContent;
+      navigator.clipboard.writeText(text);
+    }
+
+    async function generateBlog() {
+      const topic = document.getElementById('blog-topic').value;
+      if (!topic) return alert('Enter a topic');
+      const keywords = document.getElementById('blog-keywords').value.split(',').map(k => k.trim()).filter(Boolean);
+      const word_count = parseInt(document.getElementById('blog-wordcount').value) || 800;
+      const outline = document.getElementById('blog-outline').value || null;
+
+      showLoading(`Writing ${word_count}-word blog post...`);
+      try {
+        const resp = await fetch('/api/blog', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ topic, tone: selectedTone, word_count, keywords: keywords.length ? keywords : null, outline }),
+        });
+        const data = await resp.json();
+        showOutput(`Blog Post — ${topic}`, data.content);
+      } catch (e) { hideLoading(); alert('Error: ' + e.message); }
+    }
+
+    async function generateSocial() {
+      const text = document.getElementById('social-text').value;
+      if (!text) return alert('Paste content first');
+      const platforms = [...document.querySelectorAll('.platform-check:checked')].map(c => c.value);
+
+      showLoading('Generating social media posts...');
+      try {
+        const resp = await fetch('/api/social', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ text, platforms }),
+        });
+        const data = await resp.json();
+        showOutput('Social Media Posts', data.content);
+      } catch (e) { hideLoading(); alert('Error: ' + e.message); }
+    }
+
+    async function analyzeSEO() {
+      const content = document.getElementById('seo-content').value;
+      if (!content) return alert('Paste content first');
+      const keywords = document.getElementById('seo-keywords').value.split(',').map(k => k.trim()).filter(Boolean);
+
+      showLoading('Analyzing SEO...');
+      try {
+        const resp = await fetch('/api/seo', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ content, keywords: keywords.length ? keywords : null }),
+        });
+        const data = await resp.json();
+        showOutput('SEO Analysis', data.analysis);
+      } catch (e) { hideLoading(); alert('Error: ' + e.message); }
+    }
+
+    async function rewriteContent() {
+      const text = document.getElementById('rewrite-text').value;
+      if (!text) return alert('Paste content first');
+      const target_tone = document.getElementById('rewrite-tone').value;
+
+      showLoading(`Rewriting in ${target_tone} tone...`);
+      try {
+        const resp = await fetch('/api/rewrite', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ text, target_tone }),
+        });
+        const data = await resp.json();
+        showOutput(`Rewritten (${target_tone})`, data.content);
+      } catch (e) { hideLoading(); alert('Error: ' + e.message); }
+    }
+  </script>
+</body>
+</html>

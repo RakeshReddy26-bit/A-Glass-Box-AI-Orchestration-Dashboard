@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glass Box — Agent Registry</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ["'JetBrains Mono'", "'Fira Code'", "'SF Mono'", "'Cascadia Code'", "ui-monospace", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+  </style>
+</head>
+<body class="font-mono antialiased">
+
+  <!-- ================================================================
+       MOBILE SIDEBAR OVERLAY
+  ================================================================ -->
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- ================================================================
+       SIDEBAR (fixed, 256px)
+  ================================================================ -->
+  <aside id="sidebar" class="sidebar">
+
+    <!-- Logo -->
+    <div class="px-5 py-5 border-b border-[#1e293b]">
+      <div class="flex items-center gap-3">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="24" height="24" rx="4" stroke="#38bdf8" stroke-width="1.5"/>
+          <rect x="6" y="6" width="16" height="16" rx="2" stroke="#38bdf8" stroke-width="1" fill="rgba(56,189,248,0.03)"/>
+          <circle cx="14" cy="14" r="3.5" fill="#38bdf8"/>
+          <circle cx="14" cy="14" r="5" stroke="#22d3ee" stroke-width="0.5" opacity="0.4" class="ring-pulse"/>
+        </svg>
+        <div>
+          <div class="text-[13px] font-bold tracking-wider text-[#f1f5f9]">GLASS BOX</div>
+          <div class="text-[10px] text-[#475569] tracking-wide">AI Orchestration</div>
+        </div>
+        <div class="ml-auto">
+          <span class="inline-block w-2 h-2 rounded-full bg-[#22d3ee] soft-blink" title="System Online"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <div class="px-3 pb-2 text-[9px] font-bold tracking-[0.14em] uppercase text-[#334155]">Navigate</div>
+
+      <!-- Command Center -->
+      <a href="index.html" class="nav-item" data-page="command-center">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+        </svg>
+        <span>Command Center</span>
+      </a>
+
+      <!-- Agent Registry (active) -->
+      <a href="agents.html" class="nav-item active" data-page="agent-registry">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+        </svg>
+        <span>Agent Registry</span>
+      </a>
+
+      <!-- Execution Trace -->
+      <a href="trace.html" class="nav-item" data-page="execution-trace">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+        </svg>
+        <span>Execution Trace</span>
+      </a>
+
+      <!-- Approvals -->
+      <a href="approvals.html" class="nav-item" data-page="approvals">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+        </svg>
+        <span>Approvals</span>
+        <span class="ml-auto inline-flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold bg-[rgba(251,191,36,0.2)] text-[#fbbf24] border border-[rgba(251,191,36,0.3)]" id="sidebar-approval-count">2</span>
+      </a>
+
+      <!-- Decisions -->
+      <a href="decisions.html" class="nav-item" data-page="decisions">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>
+        </svg>
+        <span>Decisions</span>
+      </a>
+
+      <!-- Audit Log -->
+      <a href="audit.html" class="nav-item" data-page="audit-log">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+        </svg>
+        <span>Audit Log</span>
+      </a>
+
+      <!-- Memory -->
+      <a href="memory.html" class="nav-item" data-page="memory">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>
+        </svg>
+        <span>Memory</span>
+      </a>
+
+      <div class="px-3 pt-4 pb-2 text-[9px] font-bold tracking-[0.14em] uppercase text-[#334155]">Tools</div>
+
+      <a href="jobs.html" class="nav-item" data-page="jobs">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0"/>
+        </svg>
+        <span>NEXUS</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(34,211,238,0.2)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]">NEW</span>
+      </a>
+
+      <a href="github.html" class="nav-item" data-page="github">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        <span>GitHub</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(34,211,238,0.2)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]">NEW</span>
+      </a>
+
+      <a href="store.html" class="nav-item" data-page="store">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        <span>Store</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(251,191,36,0.2)] text-[#fbbf24] border border-[rgba(251,191,36,0.3)]">$</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar footer -->
+    <div class="px-4 py-4 border-t border-[#1e293b]">
+      <!-- System status -->
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-block w-[6px] h-[6px] rounded-full bg-[#4ade80] shadow-[0_0_6px_rgba(74,222,128,0.5)]"></span>
+        <span class="text-[10px] font-bold tracking-[0.1em] text-[#4ade80]">SYSTEM NOMINAL</span>
+      </div>
+      <!-- Clock -->
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] text-[#475569]">Local time</span>
+        <span id="sidebar-clock" class="text-[11px] text-[#94a3b8] tabular-nums">--:--:--</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================================================================
+       MAIN CONTENT
+  ================================================================ -->
+  <main class="main-content min-h-screen">
+
+    <!-- Mobile menu button -->
+    <button id="mobile-menu-btn" class="mobile-menu-btn fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#0f172a] border border-[#1e293b] text-[#94a3b8] lg:hidden" onclick="toggleSidebar()">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+      </svg>
+    </button>
+
+    <!-- Page padding wrapper -->
+    <div class="px-6 py-6 lg:px-10 lg:py-8 max-w-[1440px] mx-auto">
+
+      <!-- ============================================================
+           PAGE HEADER
+      ============================================================ -->
+      <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <div class="text-[9px] font-bold tracking-[0.14em] uppercase text-[#22d3ee] mb-1">AGENT REGISTRY</div>
+          <h1 class="text-xl font-bold text-[#f1f5f9] tracking-wide">Agent Catalog &amp; Performance</h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-[11px] text-[#64748b]">5 agents + 1 director</span>
+          <div class="w-px h-4 bg-[#1e293b]"></div>
+          <span id="header-clock" class="text-[12px] text-[#64748b] tabular-nums">--:--:--</span>
+        </div>
+      </header>
+
+      <!-- ============================================================
+           FILTER ROW
+      ============================================================ -->
+      <section class="flex items-center gap-2 mb-6" aria-label="Status filters">
+        <span class="text-[9px] font-bold tracking-[0.12em] uppercase text-[#475569] mr-2">Status</span>
+        <button class="btn-filter active" data-filter="all" onclick="filterAgents('all', this)">All</button>
+        <button class="btn-filter" data-filter="active" onclick="filterAgents('active', this)">Active</button>
+        <button class="btn-filter" data-filter="idle" onclick="filterAgents('idle', this)">Idle</button>
+        <button class="btn-filter" data-filter="error" onclick="filterAgents('error', this)">Error</button>
+      </section>
+
+      <!-- ============================================================
+           AGENT CARDS GRID
+      ============================================================ -->
+      <section id="agents-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8 stagger-children" aria-label="Agent cards">
+        <!-- Populated by JS -->
+        <div class="text-[11px] text-[#334155] py-8 text-center col-span-full">Loading agent cards...</div>
+      </section>
+
+      <!-- ============================================================
+           NICHOLAS CARD (Director)
+      ============================================================ -->
+      <section id="nicholas-card" class="mb-8" aria-label="AI Director">
+        <!-- Populated by JS -->
+        <div class="text-[11px] text-[#334155] py-4 text-center">Loading director card...</div>
+      </section>
+
+      <!-- ============================================================
+           FOOTER
+      ============================================================ -->
+      <footer class="pt-4 pb-2 border-t border-[#0f172a]">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div class="text-[10px] text-[#1e293b] tracking-wide">
+            Glass Box &middot; AI Orchestration Dashboard &middot; Read-Only &middot; No server &middot; No build step
+          </div>
+          <div class="text-[10px] text-[#1e293b]">
+            Open <code class="text-[#334155]">dashboard/agents.html</code> locally
+          </div>
+        </div>
+      </footer>
+
+    </div><!-- /page padding wrapper -->
+  </main><!-- /main-content -->
+
+  <!-- ================================================================
+       SCRIPTS
+  ================================================================ -->
+  <script src="js/data.js"></script>
+
+  <script>
+  (function () {
+    // ── Clock ──
+    function updateClocks() {
+      var d = new Date();
+      var pad = function (n) { return String(n).padStart(2, '0'); };
+      var t = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      var el1 = document.getElementById('sidebar-clock');
+      var el2 = document.getElementById('header-clock');
+      if (el1) el1.textContent = t;
+      if (el2) el2.textContent = t;
+    }
+    setInterval(updateClocks, 1000);
+    updateClocks();
+
+    // ── Mobile sidebar toggle ──
+    window.toggleSidebar = function () {
+      var sidebar = document.getElementById('sidebar');
+      var overlay = document.getElementById('sidebar-overlay');
+      if (sidebar) sidebar.classList.toggle('open');
+      if (overlay) overlay.classList.toggle('active');
+    };
+
+    // ── Helpers ──
+    function formatNum(n) {
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+      return String(n);
+    }
+
+    function statusDotColor(status) {
+      var map = { active: '#4ade80', idle: '#fbbf24', error: '#f87171' };
+      return map[status] || '#64748b';
+    }
+
+    function statusLabel(status) {
+      return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+
+    // ── Trust Score Gauge (5 segments) ──
+    function renderTrustGauge(score) {
+      // 5 segments: each represents 20 points (0-20, 20-40, 40-60, 60-80, 80-100)
+      var segments = '';
+      for (var i = 0; i < 5; i++) {
+        var threshold = (i + 1) * 20;
+        var filled = score >= threshold;
+        var partial = !filled && score > i * 20;
+        var color;
+        if (filled || partial) {
+          if (score >= 80) color = '#4ade80';
+          else if (score >= 60) color = '#fbbf24';
+          else color = '#f87171';
+        } else {
+          color = '#1e293b';
+        }
+        var opacity = (filled || partial) ? '1' : '0.3';
+        var bg = (filled || partial) ? color : '#1e293b';
+        segments += '<div style="flex:1; height:6px; border-radius:2px; background:' + bg + '; opacity:' + opacity + ';"></div>';
+      }
+      return '<div style="display:flex; gap:3px; align-items:center;">' + segments + '</div>';
+    }
+
+    // ── Confidence Bar ──
+    function renderConfBar(score, color) {
+      return '<div class="conf-bar-track">' +
+        '<div class="conf-bar-fill" style="width:' + score + '%; background:' + color + ';"></div>' +
+      '</div>';
+    }
+
+    // ── Token Usage Bar ──
+    function renderTokenBar(used, allocated) {
+      var pct = Math.round((used / allocated) * 100);
+      var barColor = pct > 80 ? '#f87171' : pct > 60 ? '#fbbf24' : '#22d3ee';
+      return '<div class="conf-bar-track" style="height:3px;">' +
+        '<div class="conf-bar-fill" style="width:' + pct + '%; background:' + barColor + ';"></div>' +
+      '</div>' +
+      '<div class="flex items-center justify-between mt-1">' +
+        '<span class="text-[9px] text-[#475569]">' + formatNum(used) + ' / ' + formatNum(allocated) + '</span>' +
+        '<span class="text-[9px] text-[#475569]">' + pct + '%</span>' +
+      '</div>';
+    }
+
+    // ── Render Single Agent Card ──
+    function renderAgentCard(agent) {
+      var dotColor = statusDotColor(agent.status);
+      var taskText = agent.currentTask
+        ? '<span class="text-[11px] text-[#94a3b8]">' + agent.currentTask + '</span>'
+        : '<span class="text-[11px] text-[#334155] italic">Idle &mdash; awaiting assignment</span>';
+
+      var riskClass = 'risk-' + agent.riskLevel;
+
+      return '<div class="glass-card rounded-xl p-5 agent-card" data-status="' + agent.status + '">' +
+        // Header row
+        '<div class="flex items-center justify-between mb-3">' +
+          '<div class="flex items-center gap-2">' +
+            '<span class="inline-block w-[8px] h-[8px] rounded-full" style="background:' + dotColor + '; box-shadow: 0 0 6px ' + dotColor + '50;"></span>' +
+            '<span class="text-[14px] font-bold" style="color:' + agent.color + ';">' + agent.name + '</span>' +
+          '</div>' +
+          '<span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold tracking-wider" style="background:rgba(148,163,184,0.08); color:#94a3b8; border:1px solid rgba(148,163,184,0.2);">' + agent.role + '</span>' +
+        '</div>' +
+
+        // Current task
+        '<div class="mb-4 pb-3 border-b border-[rgba(30,41,59,0.4)]">' +
+          '<div class="text-[9px] font-bold tracking-[0.1em] uppercase text-[#475569] mb-1">Current Task</div>' +
+          taskText +
+        '</div>' +
+
+        // Stats grid (2-col): Trust Score + Confidence
+        '<div class="grid grid-cols-2 gap-4 mb-4">' +
+          // Trust Score
+          '<div>' +
+            '<div class="flex items-center justify-between mb-1">' +
+              '<span class="text-[9px] font-bold tracking-[0.1em] uppercase text-[#475569]">Trust</span>' +
+              '<span class="text-[13px] font-bold text-[#f1f5f9]">' + agent.trustScore + '</span>' +
+            '</div>' +
+            renderTrustGauge(agent.trustScore) +
+          '</div>' +
+          // Confidence
+          '<div>' +
+            '<div class="flex items-center justify-between mb-1">' +
+              '<span class="text-[9px] font-bold tracking-[0.1em] uppercase text-[#475569]">Confidence</span>' +
+              '<span class="text-[13px] font-bold text-[#f1f5f9]">' + agent.confidenceScore + '%</span>' +
+            '</div>' +
+            renderConfBar(agent.confidenceScore, agent.color) +
+          '</div>' +
+        '</div>' +
+
+        // Metrics strip: Token usage + Latency + Cost
+        '<div class="mb-3">' +
+          '<div class="text-[9px] font-bold tracking-[0.1em] uppercase text-[#475569] mb-1">Token Usage</div>' +
+          renderTokenBar(agent.tokenUsage.used, agent.tokenUsage.allocated) +
+        '</div>' +
+        '<div class="flex items-center gap-4 mb-3">' +
+          '<div>' +
+            '<span class="text-[9px] font-bold tracking-[0.1em] uppercase text-[#475569]">Latency </span>' +
+            '<span class="text-[11px] text-[#94a3b8]">' + agent.latencyMs.toLocaleString() + 'ms</span>' +
+          '</div>' +
+          '<div class="w-px h-3 bg-[#1e293b]"></div>' +
+          '<div>' +
+            '<span class="text-[9px] font-bold tracking-[0.1em] uppercase text-[#475569]">Cost </span>' +
+            '<span class="text-[11px] text-[#94a3b8]">$' + agent.costUsd.toFixed(2) + '</span>' +
+          '</div>' +
+          '<div class="w-px h-3 bg-[#1e293b]"></div>' +
+          '<div>' +
+            '<span class="text-[9px] font-bold tracking-[0.1em] uppercase text-[#475569]">Risk </span>' +
+            '<span class="' + riskClass + ' inline-flex items-center px-1.5 py-0 rounded text-[8px] font-bold tracking-wider uppercase">' + agent.riskLevel + '</span>' +
+          '</div>' +
+        '</div>' +
+
+        // Last action
+        '<div class="pt-2 border-t border-[rgba(30,41,59,0.4)]">' +
+          '<div class="text-[10px] text-[#334155]">' +
+            '<span class="text-[#475569]">' + agent.lastActionTime + '</span>' +
+            ' &mdash; ' + agent.lastAction +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    // ── Render All Agent Cards ──
+    function renderAgentCards(agents, filter) {
+      var container = document.getElementById('agents-grid');
+      if (!container || typeof agents === 'undefined') return;
+
+      var filtered = filter && filter !== 'all'
+        ? agents.filter(function (a) { return a.status === filter; })
+        : agents;
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-[11px] text-[#334155] py-8 text-center col-span-full">No agents match the selected filter.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(function (agent) {
+        return renderAgentCard(agent);
+      }).join('');
+    }
+
+    // ── Render Nicholas Card ──
+    function renderNicholasCard(nicholas) {
+      var container = document.getElementById('nicholas-card');
+      if (!container || typeof nicholas === 'undefined') return;
+
+      container.innerHTML =
+        '<div class="glass-card rounded-xl p-6" style="border-left: 3px solid #e879f9;">' +
+          '<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">' +
+            // Name + Role
+            '<div class="flex items-center gap-3">' +
+              '<span class="inline-block w-[10px] h-[10px] rounded-full" style="background:#e879f9; box-shadow: 0 0 8px rgba(232,121,249,0.5);"></span>' +
+              '<span class="text-[18px] font-bold" style="color:#e879f9;">Nicholas</span>' +
+              '<span class="inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider" style="background:rgba(232,121,249,0.1); color:#e879f9; border:1px solid rgba(232,121,249,0.3);">' + nicholas.role + '</span>' +
+            '</div>' +
+            // Status
+            '<div class="flex items-center gap-2">' +
+              '<span class="inline-block w-[6px] h-[6px] rounded-full bg-[#4ade80] shadow-[0_0_6px_rgba(74,222,128,0.5)]"></span>' +
+              '<span class="text-[10px] font-bold tracking-[0.1em] text-[#4ade80]">ONLINE</span>' +
+            '</div>' +
+          '</div>' +
+
+          // Stats grid (4-col)
+          '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">' +
+            // Pending Approvals
+            '<div class="rounded-lg p-4" style="background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.15);">' +
+              '<div class="text-[9px] font-bold tracking-[0.12em] uppercase text-[#92400e] mb-1">Pending Approvals</div>' +
+              '<div class="text-[24px] font-bold text-[#fbbf24]">' + nicholas.pendingApprovals + '</div>' +
+              '<div class="text-[9px] text-[#92400e]">Awaiting decision</div>' +
+            '</div>' +
+            // Total Decisions
+            '<div class="rounded-lg p-4" style="background:rgba(232,121,249,0.06); border:1px solid rgba(232,121,249,0.15);">' +
+              '<div class="text-[9px] font-bold tracking-[0.12em] uppercase text-[#a855f7] mb-1">Total Decisions</div>' +
+              '<div class="text-[24px] font-bold text-[#e879f9]">' + nicholas.totalDecisions + '</div>' +
+              '<div class="text-[9px] text-[#a855f7]">This session</div>' +
+            '</div>' +
+            // Approval Rate
+            '<div class="rounded-lg p-4" style="background:rgba(74,222,128,0.06); border:1px solid rgba(74,222,128,0.15);">' +
+              '<div class="text-[9px] font-bold tracking-[0.12em] uppercase text-[#166534] mb-1">Approval Rate</div>' +
+              '<div class="flex items-baseline gap-1">' +
+                '<span class="text-[24px] font-bold text-[#4ade80]">' + nicholas.approvalRate + '</span>' +
+                '<span class="text-[12px] text-[#166534]">%</span>' +
+              '</div>' +
+              '<div class="conf-bar-track mt-2">' +
+                '<div class="conf-bar-fill" style="width:' + nicholas.approvalRate + '%; background:#4ade80;"></div>' +
+              '</div>' +
+            '</div>' +
+            // Avg Response Time
+            '<div class="rounded-lg p-4" style="background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.15);">' +
+              '<div class="text-[9px] font-bold tracking-[0.12em] uppercase text-[#0c4a6e] mb-1">Avg Response Time</div>' +
+              '<div class="text-[24px] font-bold text-[#38bdf8]">' + nicholas.avgResponseTime + '</div>' +
+              '<div class="text-[9px] text-[#0c4a6e]">Per approval</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    // ── Filter Logic ──
+    window.filterAgents = function (status, btnEl) {
+      // Update active button
+      var buttons = document.querySelectorAll('.btn-filter');
+      buttons.forEach(function (btn) { btn.classList.remove('active'); });
+      if (btnEl) btnEl.classList.add('active');
+
+      // Re-render cards
+      if (typeof AGENTS !== 'undefined') {
+        renderAgentCards(AGENTS, status);
+      }
+    };
+
+    // ── Initialize ──
+    if (typeof AGENTS !== 'undefined') {
+      renderAgentCards(AGENTS, 'all');
+    }
+
+    if (typeof NICHOLAS !== 'undefined') {
+      renderNicholasCard(NICHOLAS);
+    }
+
+  })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Job Search Agent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0a0a0a; color: #e2e8f0; min-height: 100vh; }
+    .card { background: #111; border: 1px solid #1e293b; border-radius: 12px; }
+    .gradient-text { background: linear-gradient(135deg, #818cf8, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .btn-primary { background: linear-gradient(135deg, #818cf8, #6366f1); border: none; color: white; font-weight: 600; padding: 10px 24px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
+    .job-card { transition: all 0.2s; }
+    .job-card:hover { border-color: #818cf8; transform: translateY(-2px); }
+    .tag { background: rgba(129, 140, 248, 0.15); color: #818cf8; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+    .source-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .source-remotive { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+    .source-arbeitnow { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+    #loading { display: none; }
+    .spinner { border: 3px solid #1e293b; border-top: 3px solid #818cf8; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .cover-letter { white-space: pre-wrap; line-height: 1.7; }
+  </style>
+</head>
+<body class="p-6">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <h1 class="text-4xl font-bold mb-2"><span class="gradient-text">AI Job Search Agent</span></h1>
+      <p class="text-gray-400">Search jobs, score matches, generate cover letters — powered by Claude AI</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="card p-6 mb-6">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <input id="query" type="text" value="python developer" placeholder="Job title, skill, or keyword..."
+          class="flex-1 bg-[#0a0a0a] border border-[#1e293b] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#818cf8]" />
+        <select id="source" class="bg-[#0a0a0a] border border-[#1e293b] rounded-lg px-4 py-3 text-gray-300 focus:outline-none">
+          <option value="all">All Sources</option>
+          <option value="remotive">Remotive (Remote)</option>
+          <option value="arbeitnow">Arbeitnow (Europe)</option>
+        </select>
+        <button onclick="searchJobs()" class="btn-primary">🔍 Search</button>
+        <button onclick="fullHunt()" class="btn-primary" style="background: linear-gradient(135deg, #22d3ee, #06b6d4);">🎯 Full Hunt</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-8">
+      <div class="spinner mx-auto mb-3"></div>
+      <p class="text-gray-400" id="loading-text">Searching jobs...</p>
+    </div>
+
+    <!-- Stats Bar -->
+    <div id="stats" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div class="card p-4 text-center">
+        <div class="text-2xl font-bold gradient-text" id="stat-total">0</div>
+        <div class="text-xs text-gray-500 mt-1">Jobs Found</div>
+      </div>
+      <div class="card p-4 text-center">
+        <div class="text-2xl font-bold text-green-400" id="stat-sources">0</div>
+        <div class="text-xs text-gray-500 mt-1">Sources</div>
+      </div>
+      <div class="card p-4 text-center">
+        <div class="text-2xl font-bold text-cyan-400" id="stat-remote">0</div>
+        <div class="text-xs text-gray-500 mt-1">Remote</div>
+      </div>
+      <div class="card p-4 text-center">
+        <div class="text-2xl font-bold text-amber-400" id="stat-recent">0</div>
+        <div class="text-xs text-gray-500 mt-1">This Week</div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="space-y-3"></div>
+
+    <!-- Cover Letter Modal -->
+    <div id="cl-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+      <div class="card p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold gradient-text" id="cl-title">Cover Letter</h3>
+          <button onclick="closeModal()" class="text-gray-500 hover:text-white text-xl">&times;</button>
+        </div>
+        <div class="cover-letter text-gray-300 text-sm" id="cl-content"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API = '';
+
+    async function searchJobs() {
+      const query = document.getElementById('query').value;
+      const source = document.getElementById('source').value;
+      showLoading('Searching jobs...');
+
+      try {
+        const resp = await fetch(`${API}/api/search`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({query, source, limit: 20}),
+        });
+        const data = await resp.json();
+        hideLoading();
+        displayResults(data);
+      } catch (e) {
+        hideLoading();
+        document.getElementById('results').innerHTML = `<div class="card p-6 text-red-400">Error: ${e.message}</div>`;
+      }
+    }
+
+    async function fullHunt() {
+      const query = document.getElementById('query').value;
+      showLoading('Running full pipeline: search → score → cover letters...');
+
+      try {
+        const resp = await fetch(`${API}/api/hunt`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({query, limit: 10, write_cover_letters: 3}),
+        });
+        const data = await resp.json();
+        hideLoading();
+
+        let html = `<div class="card p-6 mb-4">
+          <h3 class="text-lg font-bold gradient-text mb-2">🎯 Hunt Complete</h3>
+          <p class="text-gray-400">Found ${data.total_found} jobs, generated ${data.cover_letters?.length || 0} cover letters</p>
+          ${data.telegram_sent ? '<p class="text-green-400 text-sm mt-1">📱 Telegram notification sent</p>' : ''}
+        </div>`;
+
+        if (data.scores) {
+          html += `<div class="card p-6 mb-4"><h4 class="font-bold text-sm text-gray-400 mb-3">AI SCORES</h4><pre class="text-xs text-gray-300 whitespace-pre-wrap">${data.scores}</pre></div>`;
+        }
+
+        if (data.cover_letters) {
+          for (const cl of data.cover_letters) {
+            html += `<div class="card p-6 mb-3 job-card">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-bold text-white">${cl.role}</h4>
+                  <p class="text-sm text-gray-400">${cl.company}</p>
+                </div>
+                <button onclick="showLetter(\`${cl.company}\`, \`${cl.letter.replace(/`/g, "'").replace(/\\/g, '\\\\')}\`)" class="btn-primary text-xs">View Letter</button>
+              </div>
+            </div>`;
+          }
+        }
+
+        document.getElementById('results').innerHTML = html;
+      } catch (e) {
+        hideLoading();
+        document.getElementById('results').innerHTML = `<div class="card p-6 text-red-400">Error: ${e.message}</div>`;
+      }
+    }
+
+    function displayResults(data) {
+      const stats = document.getElementById('stats');
+      stats.classList.remove('hidden');
+      document.getElementById('stat-total').textContent = data.total || 0;
+      document.getElementById('stat-sources').textContent = data.sources?.length || 1;
+
+      const jobs = data.jobs || [];
+      const remote = jobs.filter(j => j.type === 'remote' || j.location?.toLowerCase().includes('remote')).length;
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+      const recent = jobs.filter(j => j.posted >= weekAgo).length;
+      document.getElementById('stat-remote').textContent = remote;
+      document.getElementById('stat-recent').textContent = recent;
+
+      let html = '';
+      for (const job of jobs) {
+        const sourceClass = job.source === 'Remotive' ? 'source-remotive' : 'source-arbeitnow';
+        const tags = (job.tags || []).slice(0, 4).map(t => `<span class="tag">${t}</span>`).join(' ');
+        html += `
+          <div class="card p-5 job-card">
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1">
+                <h3 class="font-bold text-white">${job.title}</h3>
+                <p class="text-sm text-gray-400">${job.company} · ${job.location}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="source-badge ${sourceClass}">${job.source}</span>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-3">${tags}</div>
+            <div class="flex justify-between items-center text-xs text-gray-500">
+              <div>${job.type} · ${job.salary} · Posted ${job.posted}</div>
+              <div class="flex gap-2">
+                <button onclick="generateLetter('${job.company}', '${job.title.replace(/'/g, "\\'")}', '${(job.description || '').slice(0, 200).replace(/'/g, "\\'").replace(/\n/g, ' ')}')" class="text-indigo-400 hover:text-indigo-300">✍️ Cover Letter</button>
+                <a href="${job.url}" target="_blank" class="text-cyan-400 hover:text-cyan-300">Apply →</a>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if (!jobs.length) html = '<div class="card p-6 text-center text-gray-500">No jobs found. Try a different search query.</div>';
+      document.getElementById('results').innerHTML = html;
+    }
+
+    async function generateLetter(company, role, desc) {
+      showLoading(`Generating cover letter for ${company}...`);
+      try {
+        const resp = await fetch(`${API}/api/cover-letter`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({company, role, job_description: desc}),
+        });
+        const data = await resp.json();
+        hideLoading();
+        if (data.success) showLetter(company, data.letter);
+      } catch (e) {
+        hideLoading();
+        alert('Error: ' + e.message);
+      }
+    }
+
+    function showLetter(company, text) {
+      document.getElementById('cl-title').textContent = `Cover Letter — ${company}`;
+      document.getElementById('cl-content').textContent = text;
+      document.getElementById('cl-modal').classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('cl-modal').classList.add('hidden'); }
+    function showLoading(text) { document.getElementById('loading').style.display = 'block'; document.getElementById('loading-text').textContent = text; document.getElementById('results').innerHTML = ''; }
+    function hideLoading() { document.getElementById('loading').style.display = 'none'; }
+
+    document.getElementById('query').addEventListener('keydown', e => { if (e.key === 'Enter') searchJobs(); });
+  </script>
+</body>
+</html>

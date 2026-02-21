@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glass Box — AI Agent Store</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ["'JetBrains Mono'", "'Fira Code'", "'SF Mono'", "'Cascadia Code'", "ui-monospace", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    .store-hero { position: relative; overflow: hidden; }
+    .store-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 50%, rgba(129, 140, 248, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 50%, rgba(34, 211, 238, 0.06) 0%, transparent 50%);
+      animation: heroGlow 15s ease-in-out infinite alternate;
+    }
+    @keyframes heroGlow {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(-5%, 5%) rotate(3deg); }
+    }
+
+    .product-card {
+      background: linear-gradient(145deg, #111111, #0d0d0d);
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .product-card:hover {
+      border-color: #334155;
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    .product-card:hover::before { opacity: 1; }
+    .product-card.job::before { background: linear-gradient(90deg, #818cf8, #6366f1); }
+    .product-card.writer::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+    .product-card.research::before { background: linear-gradient(90deg, #4ade80, #22c55e); }
+
+    .price-tag {
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      font-size: 2.5rem;
+      line-height: 1;
+    }
+    .price-tag .dollar { font-size: 1.5rem; vertical-align: super; }
+
+    .buy-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 14px 32px;
+      border-radius: 10px;
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      width: 100%;
+    }
+    .buy-btn:hover { transform: translateY(-2px); }
+    .buy-btn.job { background: linear-gradient(135deg, #818cf8, #6366f1); }
+    .buy-btn.job:hover { box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5); }
+    .buy-btn.writer { background: linear-gradient(135deg, #fbbf24, #d97706); }
+    .buy-btn.writer:hover { box-shadow: 0 8px 30px rgba(251, 191, 36, 0.5); }
+    .buy-btn.research { background: linear-gradient(135deg, #4ade80, #16a34a); }
+    .buy-btn.research:hover { box-shadow: 0 8px 30px rgba(74, 222, 128, 0.5); }
+
+    .feature-check { color: #4ade80; margin-right: 8px; font-weight: bold; }
+    .tech-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      border: 1px solid;
+    }
+    .badge-python { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
+    .badge-fastapi { background: rgba(74, 222, 128, 0.1); color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
+    .badge-claude { background: rgba(168, 85, 247, 0.1); color: #c084fc; border-color: rgba(168, 85, 247, 0.3); }
+    .badge-api { background: rgba(251, 191, 36, 0.1); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); }
+
+    .stat-card {
+      background: rgba(17, 17, 17, 0.8);
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+    .stat-number {
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      font-size: 2rem;
+      background: linear-gradient(135deg, #818cf8, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .faq-item {
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .faq-q {
+      padding: 16px 20px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .faq-q:hover { background: rgba(255,255,255,0.02); }
+    .faq-a {
+      padding: 0 20px;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s;
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .faq-item.open .faq-a {
+      padding: 0 20px 16px;
+      max-height: 300px;
+    }
+    .faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+    .bundle-card {
+      background: linear-gradient(145deg, rgba(129, 140, 248, 0.08), rgba(34, 211, 238, 0.05));
+      border: 2px solid rgba(129, 140, 248, 0.3);
+      border-radius: 16px;
+      position: relative;
+    }
+    .bundle-badge {
+      position: absolute;
+      top: -12px;
+      right: 20px;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: white;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+    }
+
+    .preview-img {
+      width: 100%;
+      height: 200px;
+      background: #0a0a0a;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .preview-img .mock {
+      font-size: 11px;
+      color: #475569;
+      font-family: 'JetBrains Mono', monospace;
+      text-align: left;
+      line-height: 1.6;
+      padding: 16px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body class="font-mono antialiased">
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div class="px-5 py-5 border-b border-[#1e293b]">
+      <div class="flex items-center gap-3">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="24" height="24" rx="6" stroke="#818cf8" stroke-width="1.5" fill="rgba(129,140,248,0.1)"/>
+          <circle cx="14" cy="14" r="4" fill="#818cf8" opacity="0.8"/>
+          <line x1="14" y1="6" x2="14" y2="10" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="14" y1="18" x2="14" y2="22" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="6" y1="14" x2="10" y2="14" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="18" y1="14" x2="22" y2="14" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <h1 class="text-sm font-bold text-white tracking-wide">GLASS BOX</h1>
+          <p class="text-[10px] text-[#64748b] tracking-[0.15em]">AI ORCHESTRATION</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <a href="index.html" class="nav-item" data-page="dashboard">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="agents.html" class="nav-item" data-page="agents">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span>Agents</span>
+      </a>
+      <a href="trace.html" class="nav-item" data-page="trace">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        <span>Trace</span>
+      </a>
+      <a href="approvals.html" class="nav-item" data-page="approvals">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Approvals</span>
+      </a>
+      <a href="decisions.html" class="nav-item" data-page="decisions">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+        <span>Decisions</span>
+      </a>
+      <a href="audit.html" class="nav-item" data-page="audit">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span>Audit</span>
+      </a>
+      <a href="memory.html" class="nav-item" data-page="memory">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+        <span>Memory</span>
+      </a>
+      <a href="jobs.html" class="nav-item" data-page="jobs">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.193 23.193 0 0112 15c-3.183 0-6.22-.64-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        <span>NEXUS</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(34,211,238,0.2)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]">NEW</span>
+      </a>
+      <a href="github.html" class="nav-item" data-page="github">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        <span>GitHub</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(34,211,238,0.2)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]">NEW</span>
+      </a>
+      <a href="store.html" class="nav-item active" data-page="store">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        <span>Store</span>
+        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-[rgba(251,191,36,0.2)] text-[#fbbf24] border border-[rgba(251,191,36,0.3)]">$</span>
+      </a>
+    </nav>
+
+    <div class="px-4 py-4 border-t border-[#1e293b]">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-block w-[6px] h-[6px] rounded-full bg-[#4ade80] shadow-[0_0_6px_rgba(74,222,128,0.5)]"></span>
+        <span class="text-[10px] font-bold tracking-[0.1em] text-[#4ade80]" id="status-text">STORE ACTIVE</span>
+      </div>
+      <div class="text-[10px] text-[#475569]" id="clock"></div>
+    </div>
+  </aside>
+
+  <!-- Mobile Header -->
+  <div class="mobile-header">
+    <button onclick="toggleSidebar()" class="p-1">
+      <svg class="w-6 h-6 text-[#94a3b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <span class="text-sm font-bold text-white">Glass Box — Store</span>
+    <div class="w-6"></div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Hero Section -->
+    <div class="store-hero rounded-2xl p-8 md:p-12 mb-10" style="background: linear-gradient(145deg, rgba(17,17,17,0.95), rgba(10,10,10,0.95)); border: 1px solid #1e293b;">
+      <div class="relative z-10 text-center max-w-3xl mx-auto">
+        <div class="inline-block mb-4 px-4 py-1.5 rounded-full border border-[rgba(129,140,248,0.3)] bg-[rgba(129,140,248,0.08)]">
+          <span class="text-[11px] font-bold tracking-[0.15em] text-[#818cf8]">AI AGENT TEMPLATES</span>
+        </div>
+        <h1 class="text-3xl md:text-5xl font-bold mb-4" style="font-family: 'Inter', sans-serif; line-height: 1.1;">
+          <span style="background: linear-gradient(135deg, #e2e8f0, #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Ready-to-deploy AI agents</span>
+          <br />
+          <span style="background: linear-gradient(135deg, #818cf8, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">that actually work.</span>
+        </h1>
+        <p class="text-gray-400 text-sm md:text-base mb-8 max-w-xl mx-auto leading-relaxed">
+          Complete, standalone AI agent templates. Download, add your API key, run.
+          Each includes a FastAPI backend, Claude AI integration, and browser dashboard.
+        </p>
+        <div class="flex flex-wrap justify-center gap-3 mb-8">
+          <span class="tech-badge badge-python">PYTHON</span>
+          <span class="tech-badge badge-fastapi">FASTAPI</span>
+          <span class="tech-badge badge-claude">CLAUDE AI</span>
+          <span class="tech-badge badge-api">REST API</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+      <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="text-xs text-gray-500 mt-1">Agent Templates</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">&lt;5m</div>
+        <div class="text-xs text-gray-500 mt-1">Setup Time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">100%</div>
+        <div class="text-xs text-gray-500 mt-1">Source Code</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">0</div>
+        <div class="text-xs text-gray-500 mt-1">Subscriptions</div>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="grid md:grid-cols-3 gap-6 mb-10">
+
+      <!-- Product 1: Job Search -->
+      <div class="product-card job p-6">
+        <div class="preview-img mb-5">
+          <div class="mock">
+            <span class="text-indigo-400">$</span> python server.py<br/>
+            <span class="text-green-400">  🎯 AI Job Search Agent</span><br/>
+            <span class="text-gray-600">  AI: configured</span><br/>
+            <span class="text-gray-600">  Dashboard: localhost:8000</span><br/><br/>
+            <span class="text-indigo-400">→</span> Found 24 jobs for "python"<br/>
+            <span class="text-indigo-400">→</span> Generated 3 cover letters<br/>
+            <span class="text-indigo-400">→</span> Telegram notification sent ✓
+          </div>
+        </div>
+        <div class="mb-4">
+          <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[rgba(129,140,248,0.15)] text-[#818cf8] mb-2">MOST POPULAR</span>
+          <h3 class="text-lg font-bold text-white" style="font-family: 'Inter', sans-serif;">Job Search Agent</h3>
+          <p class="text-gray-400 text-xs mt-1 leading-relaxed">Automates job hunting — searches Remotive + Arbeitnow, scores matches with AI, generates tailored cover letters, sends Telegram digests.</p>
+        </div>
+        <ul class="space-y-1.5 mb-6 text-xs text-gray-300">
+          <li><span class="feature-check">✓</span>Multi-source job search (free APIs)</li>
+          <li><span class="feature-check">✓</span>AI scoring (4-factor, 0-100)</li>
+          <li><span class="feature-check">✓</span>Cover letter generation</li>
+          <li><span class="feature-check">✓</span>Telegram notifications</li>
+          <li><span class="feature-check">✓</span>Browser dashboard UI</li>
+          <li><span class="feature-check">✓</span>Auto-save matches + letters</li>
+        </ul>
+        <div class="flex items-end justify-between mb-5">
+          <div>
+            <div class="price-tag text-white"><span class="dollar">$</span>49</div>
+            <div class="text-[10px] text-gray-500 mt-1">One-time purchase</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-gray-500">6 files · ~600 lines</div>
+            <div class="text-[10px] text-gray-500">Python + FastAPI</div>
+          </div>
+        </div>
+        <a href="#" class="buy-btn job" onclick="buyTemplate('job')">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+          Buy Template — $49
+        </a>
+      </div>
+
+      <!-- Product 2: Content Writer -->
+      <div class="product-card writer p-6">
+        <div class="preview-img mb-5">
+          <div class="mock">
+            <span class="text-amber-400">$</span> python server.py<br/>
+            <span class="text-green-400">  ✍️ AI Content Writer</span><br/>
+            <span class="text-gray-600">  AI: configured</span><br/>
+            <span class="text-gray-600">  Dashboard: localhost:8000</span><br/><br/>
+            <span class="text-amber-400">→</span> Blog: "Why AI agents..."<br/>
+            <span class="text-amber-400">→</span> 1,200 words · professional<br/>
+            <span class="text-amber-400">→</span> Social posts: 3 platforms ✓
+          </div>
+        </div>
+        <div class="mb-4">
+          <h3 class="text-lg font-bold text-white" style="font-family: 'Inter', sans-serif;">Content Writer Agent</h3>
+          <p class="text-gray-400 text-xs mt-1 leading-relaxed">Generates blog posts, social media content, and SEO-optimized articles. Supports 6 writing tones, auto-saves Markdown output.</p>
+        </div>
+        <ul class="space-y-1.5 mb-6 text-xs text-gray-300">
+          <li><span class="feature-check">✓</span>Full blog post generation</li>
+          <li><span class="feature-check">✓</span>6 writing tones</li>
+          <li><span class="feature-check">✓</span>Social media repurposing</li>
+          <li><span class="feature-check">✓</span>SEO analysis & scoring</li>
+          <li><span class="feature-check">✓</span>Tone rewriting</li>
+          <li><span class="feature-check">✓</span>Markdown auto-save</li>
+        </ul>
+        <div class="flex items-end justify-between mb-5">
+          <div>
+            <div class="price-tag text-white"><span class="dollar">$</span>79</div>
+            <div class="text-[10px] text-gray-500 mt-1">One-time purchase</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-gray-500">5 files · ~650 lines</div>
+            <div class="text-[10px] text-gray-500">Python + FastAPI</div>
+          </div>
+        </div>
+        <a href="#" class="buy-btn writer" onclick="buyTemplate('writer')">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+          Buy Template — $79
+        </a>
+      </div>
+
+      <!-- Product 3: Research Agent -->
+      <div class="product-card research p-6">
+        <div class="preview-img mb-5">
+          <div class="mock">
+            <span class="text-green-400">$</span> python server.py<br/>
+            <span class="text-green-400">  🔬 AI Research Agent</span><br/>
+            <span class="text-gray-600">  AI: configured</span><br/>
+            <span class="text-gray-600">  Dashboard: localhost:8000</span><br/><br/>
+            <span class="text-green-400">→</span> Research: "AI market 2026"<br/>
+            <span class="text-green-400">→</span> 15 articles analyzed<br/>
+            <span class="text-green-400">→</span> Report saved · 2,400 words ✓
+          </div>
+        </div>
+        <div class="mb-4">
+          <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[rgba(74,222,128,0.15)] text-[#4ade80] mb-2">HIGHEST VALUE</span>
+          <h3 class="text-lg font-bold text-white" style="font-family: 'Inter', sans-serif;">Research Agent</h3>
+          <p class="text-gray-400 text-xs mt-1 leading-relaxed">Market research, competitor analysis, trend reports, and SWOT breakdowns. Uses real-time news data + Claude AI for deep analysis.</p>
+        </div>
+        <ul class="space-y-1.5 mb-6 text-xs text-gray-300">
+          <li><span class="feature-check">✓</span>Market research reports</li>
+          <li><span class="feature-check">✓</span>Competitor comparison</li>
+          <li><span class="feature-check">✓</span>Trend detection from news</li>
+          <li><span class="feature-check">✓</span>SWOT analysis</li>
+          <li><span class="feature-check">✓</span>Executive summaries</li>
+          <li><span class="feature-check">✓</span>Real-time NewsAPI data</li>
+        </ul>
+        <div class="flex items-end justify-between mb-5">
+          <div>
+            <div class="price-tag text-white"><span class="dollar">$</span>99</div>
+            <div class="text-[10px] text-gray-500 mt-1">One-time purchase</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-gray-500">6 files · ~700 lines</div>
+            <div class="text-[10px] text-gray-500">Python + FastAPI + NewsAPI</div>
+          </div>
+        </div>
+        <a href="#" class="buy-btn research" onclick="buyTemplate('research')">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+          Buy Template — $99
+        </a>
+      </div>
+    </div>
+
+    <!-- Bundle Deal -->
+    <div class="bundle-card p-8 mb-10">
+      <div class="bundle-badge">SAVE $28</div>
+      <div class="flex flex-col md:flex-row items-center gap-6">
+        <div class="flex-1">
+          <h3 class="text-xl font-bold text-white mb-2" style="font-family: 'Inter', sans-serif;">🔥 Complete Agent Bundle</h3>
+          <p class="text-gray-400 text-sm mb-3">All 3 agent templates in one package. Build your AI toolkit for the price of two.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-xs px-2 py-1 rounded bg-[rgba(129,140,248,0.1)] text-[#818cf8] border border-[rgba(129,140,248,0.2)]">Job Search</span>
+            <span class="text-xs px-2 py-1 rounded bg-[rgba(251,191,36,0.1)] text-[#fbbf24] border border-[rgba(251,191,36,0.2)]">Content Writer</span>
+            <span class="text-xs px-2 py-1 rounded bg-[rgba(74,222,128,0.1)] text-[#4ade80] border border-[rgba(74,222,128,0.2)]">Research</span>
+          </div>
+        </div>
+        <div class="text-center md:text-right">
+          <div class="text-gray-500 text-sm line-through">$227</div>
+          <div class="price-tag" style="background: linear-gradient(135deg, #818cf8, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><span class="dollar">$</span>199</div>
+          <a href="#" class="buy-btn mt-3 inline-flex" style="background: linear-gradient(135deg, #818cf8, #22d3ee); width: auto; padding: 12px 40px;" onclick="buyTemplate('bundle')">
+            Get All 3 — $199
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- What's Included -->
+    <div class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-6 text-center" style="font-family: 'Inter', sans-serif;">What's in every template</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="stat-card text-left">
+          <div class="text-lg mb-2">📦</div>
+          <h4 class="font-bold text-white text-sm mb-1">Complete Source Code</h4>
+          <p class="text-gray-500 text-xs leading-relaxed">FastAPI backend, Claude AI integration, browser dashboard. No hidden dependencies or black boxes.</p>
+        </div>
+        <div class="stat-card text-left">
+          <div class="text-lg mb-2">⚡</div>
+          <h4 class="font-bold text-white text-sm mb-1">5-Minute Setup</h4>
+          <p class="text-gray-500 text-xs leading-relaxed">pip install, add API key, run. Works on macOS, Linux, Windows. No Docker or complex infra required.</p>
+        </div>
+        <div class="stat-card text-left">
+          <div class="text-lg mb-2">🔧</div>
+          <h4 class="font-bold text-white text-sm mb-1">Fully Customizable</h4>
+          <p class="text-gray-500 text-xs leading-relaxed">Clean, documented Python code. Extend prompts, add new APIs, rebrand the UI. It's your code.</p>
+        </div>
+        <div class="stat-card text-left">
+          <div class="text-lg mb-2">🎨</div>
+          <h4 class="font-bold text-white text-sm mb-1">Professional UI</h4>
+          <p class="text-gray-500 text-xs leading-relaxed">Dark theme browser dashboard with TailwindCSS. Responsive, modern, ready to demo to clients.</p>
+        </div>
+        <div class="stat-card text-left">
+          <div class="text-lg mb-2">📖</div>
+          <h4 class="font-bold text-white text-sm mb-1">Documentation</h4>
+          <p class="text-gray-500 text-xs leading-relaxed">Detailed README with API docs, example curl commands, customization guide, and file structure overview.</p>
+        </div>
+        <div class="stat-card text-left">
+          <div class="text-lg mb-2">🔄</div>
+          <h4 class="font-bold text-white text-sm mb-1">Free Updates</h4>
+          <p class="text-gray-500 text-xs leading-relaxed">Bug fixes and improvements included. One-time purchase, no recurring fees, no subscriptions.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-6 text-center" style="font-family: 'Inter', sans-serif;">FAQ</h2>
+      <div class="max-w-2xl mx-auto">
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">
+            <span>What API keys do I need?</span>
+            <span class="faq-arrow text-gray-500">▼</span>
+          </div>
+          <div class="faq-a">All templates require an Anthropic API key (Claude AI). The Research Agent also needs a free NewsAPI key. The Job Search Agent works with zero additional keys — job APIs are 100% free.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">
+            <span>How much does the Claude API cost?</span>
+            <span class="faq-arrow text-gray-500">▼</span>
+          </div>
+          <div class="faq-a">Claude Sonnet 4 costs ~$3 per million input tokens and ~$15 per million output tokens. A typical blog post generation costs about $0.01-0.03. Job scoring costs even less. Most users spend under $5/month.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">
+            <span>Can I modify and resell these?</span>
+            <span class="faq-arrow text-gray-500">▼</span>
+          </div>
+          <div class="faq-a">You can modify the code for your own use and build products on top of it. You cannot directly resell the template code as-is. See the license for details.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">
+            <span>Do I need Python experience?</span>
+            <span class="faq-arrow text-gray-500">▼</span>
+          </div>
+          <div class="faq-a">Basic Python knowledge helps for customization, but the default setup works out of the box. Just install dependencies and add your API key — the README walks you through every step.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">
+            <span>What Python version do I need?</span>
+            <span class="faq-arrow text-gray-500">▼</span>
+          </div>
+          <div class="faq-a">Python 3.9 or higher. Tested on 3.9, 3.10, 3.11, and 3.12. Works on macOS, Linux, and Windows.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center py-8 mb-6">
+      <p class="text-gray-500 text-xs tracking-[0.15em] mb-3">BUILT BY</p>
+      <p class="text-white font-bold" style="font-family: 'Inter', sans-serif;">
+        <a href="https://github.com/RakeshReddy26-bit" target="_blank" class="hover:text-[#818cf8] transition-colors">Rakesh Reddy</a>
+      </p>
+      <p class="text-gray-500 text-xs mt-1">Glass Box AI · Kiel, Germany</p>
+    </div>
+
+  </main>
+
+  <script>
+    // Sidebar toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebar-overlay').classList.toggle('active');
+    }
+
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent =
+        now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) +
+        ' · ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+    updateClock();
+    setInterval(updateClock, 60000);
+
+    // FAQ toggle
+    function toggleFaq(el) {
+      el.classList.toggle('open');
+    }
+
+    // Buy handler — opens Gumroad (placeholder URLs)
+    function buyTemplate(type) {
+      const urls = {
+        job: 'https://gumroad.com/l/ai-job-search-agent',
+        writer: 'https://gumroad.com/l/ai-content-writer-agent',
+        research: 'https://gumroad.com/l/ai-research-agent',
+        bundle: 'https://gumroad.com/l/ai-agent-bundle',
+      };
+
+      // For now, show a message since Gumroad isn't set up yet
+      const prices = { job: '$49', writer: '$79', research: '$99', bundle: '$199' };
+      const names = { job: 'Job Search Agent', writer: 'Content Writer Agent', research: 'Research Agent', bundle: 'Complete Bundle' };
+
+      alert(
+        `🎯 ${names[type]} — ${prices[type]}\n\n` +
+        `Gumroad store coming soon!\n\n` +
+        `To set up your Gumroad store:\n` +
+        `1. Create account at gumroad.com\n` +
+        `2. Upload the template ZIP from /templates/\n` +
+        `3. Replace the placeholder URLs in this file`
+      );
+    }
+  </script>
+</body>
+</html>
