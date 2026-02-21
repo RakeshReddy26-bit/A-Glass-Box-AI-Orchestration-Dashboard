@@ -6,8 +6,11 @@
 (function () {
   'use strict';
 
-  var API_BASE = 'http://localhost:8000';
-  var WS_URL = 'ws://localhost:8000/ws';
+  // Auto-detect API base: if served by backend, use same origin; else localhost
+  var loc = window.location;
+  var API_BASE = (loc.protocol === 'file:') ? 'http://localhost:8000' : loc.origin;
+  var wsProto = (loc.protocol === 'https:') ? 'wss:' : 'ws:';
+  var WS_URL = (loc.protocol === 'file:') ? 'ws://localhost:8000/ws' : wsProto + '//' + loc.host + '/ws';
 
   window.BACKEND_LIVE = false;
   var ws = null;

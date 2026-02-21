@@ -13,6 +13,8 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import uvicorn
 import httpx
@@ -748,13 +750,28 @@ async def websocket_endpoint(ws: WebSocket):
         ws_clients.discard(ws)
 
 
+# ── Static File Serving (Dashboard) ──────────────────────────────
+
+_dashboard_dir = os.path.join(os.path.dirname(__file__), "..", "dashboard")
+
+if os.path.isdir(_dashboard_dir):
+    @app.get("/")
+    async def root():
+        """Redirect to main dashboard page."""
+        return FileResponse(os.path.join(_dashboard_dir, "agents.html"))
+
+    # Serve dashboard static files (HTML, CSS, JS, assets)
+    app.mount("/", StaticFiles(directory=_dashboard_dir, html=True), name="dashboard")
+
+
 # ── Run Server ────────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run(
         "server:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True,
+        port=port,
+        reload=(os.environ.get("RENDER") is None),  # no reload in production
         log_level="info",
     )

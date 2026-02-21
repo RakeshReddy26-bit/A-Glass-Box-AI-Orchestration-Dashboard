@@ -407,7 +407,8 @@
   ================================================================ -->
   <script>
   (function() {
-    var API_BASE = 'http://localhost:8000';
+    var loc = window.location;
+    var API_BASE = (loc.protocol === 'file:') ? 'http://localhost:8000' : loc.origin;
     var isConnected = false;
 
     // ── Clock ──

@@ -305,7 +305,8 @@
 
   <script>
   (function() {
-    const API = 'http://localhost:8000';
+    const loc = window.location;
+    const API = (loc.protocol === 'file:') ? 'http://localhost:8000' : loc.origin;
 
     // ── Sidebar ────────────────────────────────────────────
     window.toggleSidebar = function() {
