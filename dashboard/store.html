@@ -377,7 +377,7 @@
             <div class="text-[10px] text-gray-500">Python + FastAPI</div>
           </div>
         </div>
-        <a href="#" class="buy-btn job" onclick="buyTemplate('job')">
+        <a href="https://kalamakuntla.gumroad.com/l/aijobsearchagent" target="_blank" class="buy-btn job">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
           Buy Template — $49
         </a>
@@ -418,7 +418,7 @@
             <div class="text-[10px] text-gray-500">Python + FastAPI</div>
           </div>
         </div>
-        <a href="#" class="buy-btn writer" onclick="buyTemplate('writer')">
+        <a href="https://kalamakuntla.gumroad.com/l/aicontentwriter" target="_blank" class="buy-btn writer">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
           Buy Template — $79
         </a>
@@ -460,7 +460,7 @@
             <div class="text-[10px] text-gray-500">Python + FastAPI + NewsAPI</div>
           </div>
         </div>
-        <a href="#" class="buy-btn research" onclick="buyTemplate('research')">
+        <a href="https://kalamakuntla.gumroad.com/l/airesearchagent" target="_blank" class="buy-btn research">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
           Buy Template — $99
         </a>
@@ -483,7 +483,7 @@
         <div class="text-center md:text-right">
           <div class="text-gray-500 text-sm line-through">$227</div>
           <div class="price-tag" style="background: linear-gradient(135deg, #818cf8, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><span class="dollar">$</span>199</div>
-          <a href="#" class="buy-btn mt-3 inline-flex" style="background: linear-gradient(135deg, #818cf8, #22d3ee); width: auto; padding: 12px 40px;" onclick="buyTemplate('bundle')">
+          <a href="https://kalamakuntla.gumroad.com" target="_blank" class="buy-btn mt-3 inline-flex" style="background: linear-gradient(135deg, #818cf8, #22d3ee); width: auto; padding: 12px 40px;">
             Get All 3 — $199
           </a>
         </div>
@@ -602,28 +602,7 @@
       el.classList.toggle('open');
     }
 
-    // Buy handler — opens Gumroad (placeholder URLs)
-    function buyTemplate(type) {
-      const urls = {
-        job: 'https://gumroad.com/l/ai-job-search-agent',
-        writer: 'https://gumroad.com/l/ai-content-writer-agent',
-        research: 'https://gumroad.com/l/ai-research-agent',
-        bundle: 'https://gumroad.com/l/ai-agent-bundle',
-      };
-
-      // For now, show a message since Gumroad isn't set up yet
-      const prices = { job: '$49', writer: '$79', research: '$99', bundle: '$199' };
-      const names = { job: 'Job Search Agent', writer: 'Content Writer Agent', research: 'Research Agent', bundle: 'Complete Bundle' };
-
-      alert(
-        `🎯 ${names[type]} — ${prices[type]}\n\n` +
-        `Gumroad store coming soon!\n\n` +
-        `To set up your Gumroad store:\n` +
-        `1. Create account at gumroad.com\n` +
-        `2. Upload the template ZIP from /templates/\n` +
-        `3. Replace the placeholder URLs in this file`
-      );
-    }
+    // Buy links now point directly to Gumroad — no JS handler needed
   </script>
 </body>
 </html>
