@@ -32,3 +32,4 @@ env/
 # Personal files
 *.pdf
 *.docx
+.env
