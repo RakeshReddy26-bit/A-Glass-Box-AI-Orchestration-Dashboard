@@ -104,3 +104,10 @@ async def run_pipeline(atlas, scout, nexus, cipher, scribe, sentinel):
         log("Sentinel blocked content. Not posted.")
 
     log("=== ATLAS DAILY PIPELINE COMPLETE ===")
+
+
+async def run_full_pipeline(atlas, scout, nexus, cipher, scribe, sentinel):
+    """
+    Backward-compatible alias for callers expecting run_full_pipeline.
+    """
+    return await run_pipeline(atlas, scout, nexus, cipher, scribe, sentinel)

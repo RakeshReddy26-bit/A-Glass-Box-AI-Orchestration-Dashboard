@@ -2,6 +2,9 @@ from langchain.tools import tool
 from integrations.skillevector_client import sv
 import json
 import logging
+from integrations.github_pusher import push_code_changes
+from integrations.dashboard_updater import update_dashboard_stats
+from integrations.code_improver import improve_code_from_feedback
 
 logger = logging.getLogger(__name__)
 
@@ -83,3 +86,39 @@ INSTRUCTIONS FOR SCRIBE:
 """
     except Exception as e:
         return f"Could not get insight: {e}. Use fallback: 'Most ML engineers are 2 skills away from their target role. SkillVector shows exactly which ones.'"
+
+
+@tool
+async def update_dashboard(_: str = "") -> str:
+    """
+    Gets today's SkillVector stats, updates dashboard data,
+    and pushes the changed dashboard file to GitHub.
+    """
+    result = await update_dashboard_stats()
+    return f"Dashboard updated: {result['status']}. Stats: {result.get('stats_updated', {})}"
+
+
+@tool
+def improve_skillevector_from_feedback(feedback: str) -> str:
+    """
+    Reads user feedback, writes a code improvement,
+    and pushes it to GitHub.
+    """
+    result = improve_code_from_feedback(feedback=feedback)
+    if result["status"] == "success":
+        return f"Improvement pushed: {result['improvement']}. Deployed to Render in ~2 min."
+    if result["status"] == "skipped":
+        return f"No code change needed: {result['reason']}"
+    return f"Improvement failed: {result.get('error')}"
+
+
+@tool
+def push_to_github(message: str = "") -> str:
+    """
+    Pushes any pending changes to GitHub.
+    """
+    result = push_code_changes(
+        files_changed=["."],
+        commit_message=message or "feat: Atlas daily update",
+    )
+    return f"GitHub push: {result['status']} — {result.get('message', result.get('deployed', ''))}"

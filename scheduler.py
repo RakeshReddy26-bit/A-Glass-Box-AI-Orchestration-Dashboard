@@ -22,18 +22,26 @@ async def run():
         verify_skillevector_connection,
         push_skill_trends_to_skillevector,
         push_jobs_to_skillevector,
-        get_insight_and_write_content
+        get_insight_and_write_content,
+        update_dashboard,
+        improve_skillevector_from_feedback,
+        push_to_github,
     )
-    from integrations.daily_pipeline import run_pipeline
+    from integrations.daily_pipeline import run_full_pipeline
 
-    atlas    = AtlasAgent(extra_tools=[verify_skillevector_connection])
+    atlas = AtlasAgent(extra_tools=[
+        verify_skillevector_connection,
+        update_dashboard,
+        improve_skillevector_from_feedback,
+        push_to_github,
+    ])
     scout    = ScoutAgent(extra_tools=[push_skill_trends_to_skillevector])
     nexus    = NexusAgent(extra_tools=[push_jobs_to_skillevector])
     cipher   = CipherAgent()
     scribe   = ScribeAgent(extra_tools=[get_insight_and_write_content])
     sentinel = SentinelAgent()
 
-    await run_pipeline(atlas, scout, nexus, cipher, scribe, sentinel)
+    await run_full_pipeline(atlas, scout, nexus, cipher, scribe, sentinel)
 
 
 def trigger():
