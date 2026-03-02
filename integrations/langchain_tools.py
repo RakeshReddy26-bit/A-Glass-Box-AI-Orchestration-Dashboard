@@ -5,6 +5,14 @@ import logging
 from integrations.github_pusher import push_code_changes
 from integrations.dashboard_updater import update_dashboard_stats
 from integrations.code_improver import improve_code_from_feedback
+from integrations.workflow_manager import (
+    add_lesson,
+    get_current_plan,
+    mark_task_complete,
+    read_lessons,
+    update_review,
+    write_plan,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -122,3 +130,84 @@ def push_to_github(message: str = "") -> str:
         commit_message=message or "feat: Atlas daily update",
     )
     return f"GitHub push: {result['status']} — {result.get('message', result.get('deployed', ''))}"
+
+
+@tool
+def plan_daily_pipeline(_: str = "") -> str:
+    """
+    ATLAS calls this FIRST every morning before doing anything.
+    Writes today's task plan to tasks/todo.md.
+    Also reads lessons.md to avoid past mistakes.
+    """
+    lessons = read_lessons()
+    tasks = [
+        "Verify SkillVector connection",
+        "Scout: research trending ML skills via NewsAPI",
+        "Nexus: find 20 new job postings from Remotive + Arbeitnow",
+        "Cipher: score and rank job quality",
+        "Sentinel: validate job listings for compliance",
+        "Push validated jobs to SkillVector Pinecone",
+        "Update skill trend weights in SkillVector",
+        "Update dashboard stats + push to GitHub",
+        "Scribe: get daily insight from SkillVector",
+        "Scribe: write LinkedIn post (150-200 words)",
+        "Sentinel: review LinkedIn post",
+        "Post to LinkedIn via Zapier",
+        "Scribe: write Indie Hackers post",
+        "Save Indie Hackers post to posts/ folder",
+    ]
+    plan_result = write_plan(tasks=tasks, context="Daily Atlas automation pipeline")
+    return f"""
+Plan written. Starting pipeline.
+
+LESSONS TO REMEMBER TODAY:
+{lessons[:500]}
+
+{plan_result}
+"""
+
+
+@tool
+def complete_task(task_name: str) -> str:
+    """
+    ATLAS calls this after completing each pipeline step.
+    Marks the task as done in tasks/todo.md.
+    Input: exact task name from the plan
+    """
+    return mark_task_complete(task_name)
+
+
+@tool
+def record_lesson(input_json: str) -> str:
+    """
+    ATLAS calls this when something goes wrong.
+    Records the mistake so it never happens again.
+    Input JSON: {"pattern": "what went wrong", "fix": "how to prevent it"}
+    """
+    try:
+        data = json.loads(input_json)
+        return add_lesson(pattern=data["pattern"], fix=data["fix"])
+    except Exception as e:
+        return f"Could not record lesson: {e}"
+
+
+@tool
+def check_current_plan(_: str = "") -> str:
+    """
+    ATLAS calls this to see current task progress.
+    Shows which tasks are done and which are pending.
+    """
+    return get_current_plan()
+
+
+@tool
+def update_pipeline_review(input_json: str) -> str:
+    """
+    ATLAS calls this at end of pipeline to record results.
+    Input JSON: {"key": "Jobs added today", "value": "15"}
+    """
+    try:
+        data = json.loads(input_json)
+        return update_review(data["key"], data["value"])
+    except Exception as e:
+        return f"Could not update review: {e}"

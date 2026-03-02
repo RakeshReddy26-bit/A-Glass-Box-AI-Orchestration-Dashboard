@@ -1,14 +1,12 @@
-import asyncio
 import logging
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 
-async def run_pipeline(atlas, scout, nexus, cipher, scribe, sentinel):
+async def run_full_pipeline(atlas, scout, nexus, cipher, scribe, sentinel):
     """
-    Master daily pipeline. Atlas calls this every morning at 6AM.
-    All 6 agents work in sequence. Zero human input needed.
+    Complete daily pipeline with planning, tracking and lessons.
     """
 
     def log(msg):
@@ -16,98 +14,112 @@ async def run_pipeline(atlas, scout, nexus, cipher, scribe, sentinel):
 
     log("=== ATLAS DAILY PIPELINE STARTED ===")
 
-    # STEP 1 — Atlas checks SkillVector is alive
-    log("Step 1: Atlas checking SkillVector connection...")
-    health = await atlas.arun("Call verify_skillevector_connection")
+    # STEP 0 — Read lessons + write plan
+    log("Step 0: Atlas planning today's pipeline...")
+    await atlas.arun(
+        "Call plan_daily_pipeline to write today's task plan "
+        "and read lessons from past mistakes. "
+        "Then confirm you are ready to start."
+    )
+
+    # STEP 1 — Verify connection
+    log("Step 1: Verifying SkillVector connection...")
+    health = await atlas.arun(
+        "Call verify_skillevector_connection. "
+        "If OK, call complete_task with 'Verify SkillVector connection'. "
+        "If FAILED, call record_lesson with the error pattern and fix, "
+        "then wait 30 seconds and retry once."
+    )
     if "DOWN" in health:
-        log("SkillVector down. Waiting 30 minutes...")
-        await asyncio.sleep(1800)
-        health = await atlas.arun("Call verify_skillevector_connection")
-        if "DOWN" in health:
-            log("Still down. Aborting pipeline.")
-            return
+        log("SkillVector down. Aborting.")
+        return
 
-    # STEP 2 — Scout researches trending ML skills
-    log("Step 2: Scout researching trending skills via NewsAPI...")
+    # STEP 2 — Scout trends
+    log("Step 2: Scout researching trending skills...")
     await scout.arun(
-        "Search NewsAPI for the top 10 trending ML engineering skills "
-        "mentioned in job postings this week at companies like Stripe, "
-        "Google, Anthropic, OpenAI. Return as JSON array of skill strings. "
-        "Then call push_skill_trends_to_skillevector with your findings."
+        "Search NewsAPI for top 10 trending ML skills this week. "
+        "Call push_skill_trends_to_skillevector with results. "
+        "Then call complete_task with 'Scout: research trending ML skills via NewsAPI'."
     )
 
-    # STEP 3 — Nexus scrapes new jobs
-    log("Step 3: Nexus scraping Remotive + Arbeitnow...")
+    # STEP 3 — Nexus finds jobs
+    log("Step 3: Nexus finding new jobs...")
     raw_jobs = await nexus.arun(
-        "Search Remotive and Arbeitnow for ML engineering jobs posted "
-        "in the last 48 hours. Find 20 jobs. For each collect: "
-        "title, company, location, apply_url, required_skills (list), "
-        "description (first 300 chars), salary if shown. "
-        "Return as JSON array. Do NOT call push_jobs_to_skillevector yet."
+        "Search Remotive and Arbeitnow for 20 ML jobs from last 48 hours. "
+        "Return as JSON array. Do NOT push yet. "
+        "Call complete_task with 'Nexus: find 20 new job postings from Remotive + Arbeitnow'."
     )
 
-    # STEP 4 — Cipher scores job quality
-    log("Step 4: Cipher scoring job quality...")
-    ranked_jobs = await cipher.arun(
-        f"Score each job listing 0-100 for quality and legitimacy: {raw_jobs}. "
-        "Remove anything scoring below 60. "
-        "Return filtered list as JSON array."
+    # STEP 4 — Cipher scores
+    log("Step 4: Cipher scoring jobs...")
+    ranked = await cipher.arun(
+        f"Score these jobs 0-100 for quality: {raw_jobs}. "
+        "Remove anything below 60. Return filtered JSON. "
+        "Call complete_task with 'Cipher: score and rank job quality'."
     )
 
-    # STEP 5 — Sentinel validates compliance
+    # STEP 5 — Sentinel validates
     log("Step 5: Sentinel validating jobs...")
-    approved_jobs = await sentinel.arun(
-        f"Review these job listings for compliance: {ranked_jobs}. "
-        "Remove any scams, duplicates, or suspicious URLs. "
-        "Return only approved jobs as JSON array."
+    approved = await sentinel.arun(
+        f"Review for compliance: {ranked}. "
+        "Remove scams and fake listings. Return approved JSON. "
+        "Call complete_task with 'Sentinel: validate job listings for compliance'."
     )
 
-    # STEP 6 — Nexus sends approved jobs to SkillVector
-    log("Step 6: Nexus pushing approved jobs to SkillVector...")
+    # STEP 6 — Push jobs
+    log("Step 6: Pushing approved jobs to SkillVector...")
     await nexus.arun(
-        f"Call push_jobs_to_skillevector with this list: {approved_jobs}"
+        f"Call push_jobs_to_skillevector with: {approved}. "
+        "Then call complete_task with 'Push validated jobs to SkillVector Pinecone'."
     )
 
-    # STEP 7 — Wait until 8AM then Scribe creates content
-    log("Step 7: Waiting until 8AM for content creation...")
-    now = datetime.now()
-    seconds_to_8am = max(0, (8 - now.hour) * 3600 - now.minute * 60)
-    if seconds_to_8am > 0:
-        await asyncio.sleep(seconds_to_8am)
+    # STEP 7 — Dashboard update
+    log("Step 7: Updating dashboard...")
+    await atlas.arun(
+        "Call update_dashboard to update stats and push to GitHub. "
+        "Then call complete_task with 'Update dashboard stats + push to GitHub'."
+    )
 
-    log("Step 7: Scribe getting daily insight and writing content...")
+    # STEP 8 — Content creation
+    log("Step 8: Scribe creating content...")
     draft = await scribe.arun(
-        "Call get_insight_and_write_content to get today's SkillVector data. "
-        "Write a full LinkedIn post (150-200 words, founder voice). "
-        "Write a tweet (under 280 chars). "
-        "Label them clearly as LINKEDIN: and TWEET:"
+        "Call get_insight_and_write_content. "
+        "Write full LinkedIn post 150-200 words. "
+        "Write Indie Hackers post 200-300 words. "
+        "Call complete_task with 'Scribe: get daily insight from SkillVector'."
     )
 
-    # STEP 8 — Sentinel reviews content
-    log("Step 8: Sentinel reviewing content...")
+    # STEP 9 — Sentinel reviews
+    log("Step 9: Sentinel reviewing content...")
     reviewed = await sentinel.arun(
-        f"Review this content for compliance before posting: {draft}. "
-        "No false claims. No competitor names. "
-        "If approved respond with APPROVED followed by the content. "
-        "If changes needed respond with REVISED followed by fixed content."
+        f"Review this content: {draft}. "
+        "Check compliance. Return APPROVED or REVISED content. "
+        "Call complete_task with 'Sentinel: review LinkedIn post'."
     )
 
-    # STEP 9 — Post approved content
-    if "APPROVED" in reviewed or "REVISED" in reviewed:
-        log("Step 9: Scribe posting to LinkedIn and Twitter...")
+    # STEP 10 — Post content
+    if "APPROVED" in str(reviewed) or "REVISED" in str(reviewed):
+        log("Step 10: Posting content...")
         await scribe.arun(
-            f"Post this content to LinkedIn and Twitter now: {reviewed}. "
-            "Post LinkedIn first then Twitter. Confirm both posted."
+            f"Post to LinkedIn via Zapier: {reviewed}. "
+            "Save Indie Hackers post to posts/ folder. "
+            "Call complete_task with 'Post to LinkedIn via Zapier'. "
+            "Call complete_task with 'Save Indie Hackers post to posts/ folder'."
         )
-        log("Content posted successfully.")
-    else:
-        log("Sentinel blocked content. Not posted.")
+
+    # STEP 11 — Final review
+    log("Step 11: Recording pipeline results...")
+    await atlas.arun(
+        "Call update_pipeline_review with jobs added count. "
+        "Call update_pipeline_review with LinkedIn post URL. "
+        "Call check_current_plan to confirm all tasks complete."
+    )
 
     log("=== ATLAS DAILY PIPELINE COMPLETE ===")
 
 
-async def run_full_pipeline(atlas, scout, nexus, cipher, scribe, sentinel):
+async def run_pipeline(atlas, scout, nexus, cipher, scribe, sentinel):
     """
-    Backward-compatible alias for callers expecting run_full_pipeline.
+    Backward-compatible alias for callers expecting run_pipeline.
     """
-    return await run_pipeline(atlas, scout, nexus, cipher, scribe, sentinel)
+    return await run_full_pipeline(atlas, scout, nexus, cipher, scribe, sentinel)
