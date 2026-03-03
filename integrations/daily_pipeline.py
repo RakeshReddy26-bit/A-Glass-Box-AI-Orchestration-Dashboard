@@ -123,3 +123,19 @@ async def run_pipeline(atlas, scout, nexus, cipher, scribe, sentinel):
     Backward-compatible alias for callers expecting run_pipeline.
     """
     return await run_full_pipeline(atlas, scout, nexus, cipher, scribe, sentinel)
+
+
+async def send_morning_email():
+    """Atlas calls this every morning after writing the post."""
+    import os
+    from integrations.email_sender import send_daily_post_email
+    
+    post_file = "posts/linkedin_today.md"
+    if not os.path.exists(post_file):
+        return {"status": "failed", "error": "No post file found"}
+    
+    with open(post_file, "r") as f:
+        post_content = f.read()
+    
+    result = send_daily_post_email(post_content)
+    return result

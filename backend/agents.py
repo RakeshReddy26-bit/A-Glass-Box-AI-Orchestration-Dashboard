@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 """
 Glass Box AI Dashboard — Agent Manager
 Manages 5 AI agents, each with a unique system prompt and conversation history.
