@@ -1,11 +1,12 @@
-# Glass Box — AI Orchestration Dashboard
+# Glass Box AI + SkillVector — Complete System Guide
 
-> A full-stack multi-agent AI orchestration platform with 6 autonomous agents,
-> real-time dashboard, GitHub integration, job search automation, and a
-> commercial AI template marketplace.
+> **Plain English:** This is two projects that work together.
+> **Glass Box AI** is the brain — 6 AI agents that automate your daily work.
+> **SkillVector** is the product — an AI career intelligence platform for ML engineers.
+> Glass Box runs SkillVector automatically every day. You sleep, it works.
 
 ![Status](https://img.shields.io/badge/status-active-4ade80?style=flat-square)
-![Python](https://img.shields.io/badge/python-3.11-3776ab?style=flat-square&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/python-3.9+-3776ab?style=flat-square&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688?style=flat-square&logo=fastapi&logoColor=white)
 ![Claude](https://img.shields.io/badge/Claude_Sonnet_4-Anthropic-cc785c?style=flat-square)
 ![Agents](https://img.shields.io/badge/agents-6-818cf8?style=flat-square)
@@ -14,15 +15,161 @@
 
 ---
 
-## What Is This?
+## How the Two Projects Connect
 
-Most AI agent systems are **black boxes** — you issue a goal, agents act invisibly, and you get output. What happened in between is opaque.
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                   YOUR MACBOOK (local machine)                    │
+│                                                                   │
+│  ┌─────────────────────────────────┐                              │
+│  │  Glass Box AI Dashboard         │                              │
+│  │  (THIS REPO)                    │                              │
+│  │                                 │                              │
+│  │  scheduler.py ──→ runs daily    │    ┌──────────────────────┐  │
+│  │       │            at 8 AM      │    │  skillvector-engine/  │  │
+│  │       ▼                         │    │  (separate repo)      │  │
+│  │  daily_pipeline.py              │───▶│                       │  │
+│  │       │                         │    │  FastAPI backend       │  │
+│  │       ├─ Research (Claude AI)   │    │  Neo4j + Pinecone     │  │
+│  │       ├─ Write 4 social posts   │    │  ML career analysis   │  │
+│  │       ├─ Save posts to files    │    │                       │  │
+│  │       ├─ Email you the digest   │    │  Deployed on Railway  │  │
+│  │       ├─ Monitor competitors    │    │  api.skill-vector.com │  │
+│  │       ├─ Improve code (M/W/F)  │    └──────────────────────┘  │
+│  │       └─ Health check API ──────│──────────▶ /health           │
+│  │          (if down → auto-fix)   │                              │
+│  └─────────────────────────────────┘                              │
+└──────────────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │  Railway (cloud)     │
+              │  api.skill-vector.com│
+              │  skill-vector.com    │
+              └─────────────────────┘
+```
 
-**Glass Box** inverts this. Every agent action, decision, confidence score, risk level, and approval gate is surfaced in a real-time dashboard. Plus:
+**In simple terms:**
+- **SkillVector** is a website (skill-vector.com) that helps ML engineers find career opportunities
+- **Glass Box AI** is the operations center that runs SkillVector — it creates content, monitors the API, fixes crashes, and reports everything to you via email
+- They live in two separate GitHub repos but Glass Box knows the path to SkillVector's code and can push changes to it
 
-- **NEXUS** — An AI-powered job search agent that scans multiple APIs, scores matches, and generates cover letters
-- **GitHub Integration** — Live repo stats, commit activity, and profile sync
-- **AI Template Store** — 3 production-ready, sellable AI agent templates
+---
+
+## What Happens Every Day (The Full Workflow)
+
+Every morning at **8:00 AM**, this is what runs automatically:
+
+### Step 1 — Health Check (self-healing)
+Atlas pings `https://api.skill-vector.com/health` three times.
+- **If UP:** Continues to next step
+- **If DOWN:** Pushes an empty commit to the SkillVector repo → Railway auto-redeploys → waits 2 min → checks again → if still down, sends you an alert email
+
+### Step 2 — Research
+Claude AI generates 3 fresh insights about the ML/AI career landscape — hiring trends, salary shifts, new tools launching.
+
+### Step 3 — Content Generation
+Using those insights, Claude writes 4 social media posts:
+- **LinkedIn** — Professional, 150-200 words, founder voice
+- **Reddit** (r/MachineLearning) — Honest, helpful, zero hype
+- **Twitter/X** — Punchy, max 280 characters, one surprising stat
+- **Indie Hackers** — Builder story, what you learned this week
+
+### Step 4 — Save Posts
+All 4 posts are saved to the `posts/` folder with dated filenames (e.g., `linkedin_2026-03-06.md`) plus `*_today.md` copies that always have the latest.
+
+### Step 5 — Email Digest
+A formatted HTML email with all 4 posts is sent to your Gmail. If email fails, it retries 3 times with 60-second gaps.
+
+### Step 6 — Code Improvement (Monday, Wednesday, Friday)
+Atlas reads your SkillVector code, asks Claude for a small safe improvement, writes the fix, and pushes it to GitHub. Railway auto-deploys the change.
+
+### Step 7 — Weekly Analytics (Sunday)
+Fetches usage stats from the SkillVector API and generates a CEO-level weekly summary.
+
+### Step 8 — Competitor Monitoring (daily)
+Claude researches 3-5 competitors in the AI career tools space and saves intel to `tasks/competitor_intel.md`.
+
+### After Every Run
+- **Confidence score** logged (0-100%) — how many steps succeeded
+- **Failed steps** auto-recorded in `tasks/lessons.md` so Atlas avoids the same mistakes next run
+- **Token usage** logged per Claude call (input/output/total)
+
+---
+
+## Hourly Health Ping
+
+Besides the daily pipeline, a separate cron job pings `api.skill-vector.com` every hour.
+- If the API is down **2 hours in a row**, Atlas auto-triggers a Railway redeploy
+- If the redeploy doesn't fix it, you get an alert email
+
+---
+
+## The 6 AI Agents
+
+| Agent | Role | What It Does |
+|-------|------|--------------|
+| **Atlas** | Orchestrator | Runs the daily pipeline, coordinates all agents, auto-fixes API downtime |
+| **Scout** | Research | Gathers market data, ML career trends, news via Claude + NewsAPI |
+| **Cipher** | Analysis | Scores job matches (0-100), runs risk models, analyzes data |
+| **Scribe** | Writer | Writes social posts, cover letters, reports — tailored to each platform |
+| **Sentinel** | Compliance | Reviews all outputs for quality, flags scam jobs, checks cover letters |
+| **NEXUS** | Job Hunter | Searches Remotive + Arbeitnow, scores jobs, generates tailored cover letters |
+
+All agents use **Claude Sonnet 4** (`claude-sonnet-4-20250514`) with:
+- Lean system prompts (~70 tokens each)
+- Prompt caching (90% cheaper on cache hits)
+- 6-message sliding context window (not full history)
+- Default 512 max tokens to keep costs low
+
+---
+
+## What It Can Do (Full Feature List)
+
+### Automated (no action needed from you)
+- ✅ Daily social media content for 4 platforms
+- ✅ Daily email digest with all posts
+- ✅ Hourly API health monitoring
+- ✅ Auto-redeploy SkillVector if it crashes
+- ✅ Competitor intel gathering
+- ✅ Code improvements pushed to SkillVector (Mon/Wed/Fri)
+- ✅ Weekly analytics report (Sunday)
+- ✅ Self-healing: retries on failure, skips broken steps, keeps going
+- ✅ Learning loop: records mistakes, reads them before next run
+- ✅ Confidence scoring after every pipeline run
+- ✅ Token usage tracking per Claude call
+
+### Dashboard (interactive, you use the UI)
+- ✅ 10-page real-time dashboard with dark theme
+- ✅ Chat with any of the 6 agents
+- ✅ Job search across Remotive, Arbeitnow, Adzuna
+- ✅ AI-powered job scoring (Skills 40%, Location 20%, Role 20%, Growth 20%)
+- ✅ Cover letter generation tailored to each company
+- ✅ GitHub repo stats, commit activity, language breakdown
+- ✅ Approval queue — approve/reject high-risk agent actions
+- ✅ Audit log with CSV export
+- ✅ Decision attribution — see why each agent made each decision
+
+### Sellable Templates
+- ✅ 3 ready-to-sell AI agent templates ($49, $79, $99)
+- ✅ Bundle deal: all 3 for $199
+
+---
+
+## What You Do Manually
+
+These are the **only things** that need your hands:
+
+| Task | How Often | What To Do |
+|------|-----------|------------|
+| **Post to social media** | Daily | Copy posts from email/`posts/` folder → paste to LinkedIn, Reddit, Twitter, Indie Hackers (or set up Zapier to auto-post) |
+| **Review code improvements** | Mon/Wed/Fri | Check the auto-pushed commits to SkillVector repo — they're usually small/safe but worth a glance |
+| **Check email digest** | Daily | Read the morning email to see what Atlas did |
+| **Handle alert emails** | Rare | If Atlas can't auto-fix the API, you'll get an email — check Railway dashboard |
+| **Update .env if keys expire** | Rare | If Anthropic API key, Gmail app password, or any key rotates |
+| **Keep your Mac on** | Always | Cron jobs only run when your Mac is awake (or use Railway/cloud scheduler) |
+
+Everything else is automatic.
 
 ---
 
@@ -37,92 +184,139 @@ cd A-Glass-Box-AI-Orchestration-Dashboard
 python -m venv .venv && source .venv/bin/activate
 pip install -r backend/requirements.txt
 
-# 3. Configure API keys
+# 3. Configure API keys (copy and fill in your keys)
 cp backend/.env.example backend/.env
-# Edit backend/.env with your ANTHROPIC_API_KEY (required), TELEGRAM_BOT_TOKEN (optional)
+# Required: ANTHROPIC_API_KEY, EMAIL_FROM, EMAIL_TO, EMAIL_APP_PASSWORD
+# Required: SKILLEVECTOR_REPO_PATH (path to your skillvector-engine repo)
+# Optional: TELEGRAM_BOT_TOKEN, Twitter/LinkedIn tokens
 
-# 4. Start the server
+# 4. Start the dashboard server
 cd backend && python server.py
 # Server runs on http://localhost:8000
 
 # 5. Open the dashboard
-open dashboard/agents.html
+open http://localhost:8000
+
+# 6. Run the daily pipeline manually (to test)
+cd .. && python scheduler.py --run-now
+
+# 7. Verify cron is set (runs automatically at 8 AM daily)
+crontab -l
 ```
 
 ---
 
-## Architecture
+## Project Structure
 
 ```
 A-Glass-Box-AI-Orchestration-Dashboard/
-├── backend/
-│   ├── server.py              FastAPI server — 30+ endpoints, CORS, Telegram
-│   ├── agents.py              6 AI agents with Claude Sonnet 4
-│   ├── scout_tools.py         NewsAPI research tools
-│   ├── job_tools.py           Remotive + Arbeitnow + Adzuna job APIs
-│   ├── github_tools.py        GitHub API integration (8 methods)
-│   ├── profile_manager.py     JSON profile persistence + cover letters
-│   └── requirements.txt
-├── dashboard/
-│   ├── index.html             Command Center — KPIs, live feed, topology
-│   ├── agents.html            Agent Registry — cards, trust scores, filters
-│   ├── trace.html             Execution Trace — vertical timeline
-│   ├── approvals.html         Approvals — interactive approve/reject
-│   ├── decisions.html         Decision Attribution — context chains
-│   ├── audit.html             Audit Log — filterable compliance table
-│   ├── memory.html            Memory Inspector — token utilization
-│   ├── jobs.html              NEXUS — AI job search + cover letters
-│   ├── github.html            GitHub — repos, commits, profile sync
-│   ├── store.html             Template Store — product cards, pricing
-│   ├── css/styles.css         Design system — dark theme, glass effects
-│   ├── js/data.js             Mock data for demo pages
-│   └── assets/favicon.svg
-├── templates/                 ⭐ Sellable AI agent templates
-│   ├── job-search-agent/      $49 — AI job search + scoring + cover letters
-│   ├── content-writer-agent/  $79 — Blog, social media, SEO, rewriting
-│   └── research-agent/        $99 — Market research, competitors, SWOT, trends
-└── docs/
-    ├── architecture.md
-    ├── agent-roles.md
-    ├── approval-flow.md
-    └── mental-model.md
+│
+├── scheduler.py                  ⏰ Main scheduler — daily pipeline + hourly health
+├── run_scheduler.sh              🔧 Bash wrapper for launchd/cron
+│
+├── backend/                      🖥️ FastAPI server + AI agents
+│   ├── server.py                 30+ REST endpoints, WebSocket, Telegram
+│   ├── agents.py                 6 AI agents with Claude Sonnet 4
+│   ├── scout_tools.py            NewsAPI research tools
+│   ├── job_tools.py              Job search: Remotive + Arbeitnow + Adzuna
+│   ├── github_tools.py           GitHub API integration (8 methods)
+│   ├── profile_manager.py        User profile + cover letter storage
+│   └── tests/                    29 automated tests
+│
+├── integrations/                 🔗 Automation layer (this is where the magic happens)
+│   ├── daily_pipeline.py         835 lines — the full 8-step daily pipeline
+│   ├── email_sender.py           HTML email with all 4 platform posts
+│   ├── code_improver.py          Auto-improve SkillVector code via Claude
+│   ├── github_pusher.py          Git commit + push automation
+│   ├── skillevector_client.py    Health check + API client for SkillVector
+│   ├── dashboard_updater.py      Update dashboard stats
+│   ├── workflow_manager.py       Task tracking + workflow state
+│   └── langchain_tools.py        LangChain tool wrappers
+│
+├── dashboard/                    📊 10-page real-time UI
+│   ├── index.html                Command Center — KPIs, live feed, topology
+│   ├── agents.html               Agent cards, trust scores, status
+│   ├── trace.html                Pipeline execution timeline
+│   ├── approvals.html            Approve/reject high-risk actions
+│   ├── decisions.html            Why each agent made each decision
+│   ├── audit.html                Compliance log, CSV export
+│   ├── memory.html               Token usage, context windows
+│   ├── jobs.html                 NEXUS job search + cover letters
+│   ├── github.html               Repo stats, commits, languages
+│   └── store.html                Template marketplace
+│
+├── templates/                    💰 Sellable AI agent templates
+│   ├── job-search-agent/         $49 — search + score + cover letters
+│   ├── content-writer-agent/     $79 — blog + social + SEO
+│   └── research-agent/           $99 — research + competitors + SWOT
+│
+├── posts/                        📝 Generated social media posts (auto-updated daily)
+├── tasks/                        📋 Lessons, competitor intel, task tracking
+├── logs/                         📄 atlas.log, cron.log
+└── docs/                         📚 Architecture docs
 ```
 
 ---
 
-## The 6 Agents
+## How SkillVector Connects (Technical)
 
-| Agent | Role | What It Does |
-|-------|------|--------------|
-| **Atlas** | Orchestrator | Coordinates all agents, assigns tasks, manages pipeline flow |
-| **Scout** | Research | Gathers market data, news via NewsAPI |
-| **Cipher** | Analysis | Runs financial models, risk assessments |
-| **Scribe** | Writer | Drafts reports, cover letters (max 800 tokens) |
-| **Sentinel** | Compliance | Reviews outputs for regulatory compliance |
-| **NEXUS** | Job Hunter | Searches Remotive + Arbeitnow, scores jobs, generates cover letters |
+| Connection | How |
+|------------|-----|
+| **Health check** | Glass Box pings `https://api.skill-vector.com/health` every hour |
+| **Auto-redeploy** | If API is down, Glass Box pushes an empty commit to skillvector-engine repo → Railway auto-deploys |
+| **Code improvement** | Glass Box reads SkillVector source code via `SKILLEVECTOR_REPO_PATH`, asks Claude for improvements, writes the fix, pushes to GitHub |
+| **Dashboard stats** | Glass Box fetches `/dashboard/stats` from SkillVector API for weekly reports |
+| **Content** | Glass Box generates LinkedIn/Reddit/Twitter/IndieHackers posts that promote SkillVector |
 
-All agents use **Claude Sonnet 4** with:
-- Lean system prompts (~70 tokens each, 5x reduction from original)
-- Anthropic prompt caching (`cache_control: ephemeral`)
-- 6-message sliding context window
-- Default 512 max tokens (800 for Scribe)
+**Environment variables that connect them:**
+```
+SKILLEVECTOR_URL=http://localhost:8000          # Local dev URL
+SKILLEVECTOR_REPO_PATH=/path/to/skillvector-engine  # Local repo path
+```
+The pipeline always checks the **production URL** (`https://api.skill-vector.com`) for health monitoring, regardless of what `SKILLEVECTOR_URL` is set to.
 
 ---
 
-## Dashboard Pages (10)
+## Self-Healing: What Happens When Things Break
 
-| # | Page | Description |
-|---|------|-------------|
-| 1 | **Command Center** | KPIs, live activity feed, agent topology graph, system metrics |
-| 2 | **Agent Registry** | Agent cards with trust scores, confidence, token usage, latency |
-| 3 | **Execution Trace** | Vertical timeline of pipeline steps with reasoning |
-| 4 | **Approvals** | Human-in-the-loop approve/reject queue with toast notifications |
-| 5 | **Decision Attribution** | Full upstream context chain for every output |
-| 6 | **Audit Log** | 20-row compliance-grade event log, filterable, CSV export |
-| 7 | **Memory Inspector** | Agent context windows, token utilization bars |
-| 8 | **NEXUS Jobs** | Job search across APIs, AI scoring, cover letter generation |
-| 9 | **GitHub** | Repo cards, commit activity, language stats, profile sync |
-| 10 | **Template Store** | Storefront with 3 product cards, pricing, bundle deal |
+```
+Something fails
+    │
+    ├─ API is down?
+    │   └─ Atlas retries 3x → pushes empty commit → Railway redeploys
+    │       └─ Still down? → Sends you alert email
+    │
+    ├─ Email fails?
+    │   └─ Retries 3 times, 60s apart
+    │
+    ├─ Content generation fails?
+    │   └─ Email still sends (with error message instead of posts)
+    │
+    ├─ Code improvement fails?
+    │   └─ Skipped, rest of pipeline continues
+    │
+    └─ Any step crashes?
+        └─ Caught, logged, lesson recorded, next step runs
+```
+
+The pipeline **never stops entirely**. Even if 7 out of 8 steps fail, the email step still runs to tell you what broke.
+
+---
+
+## Token Costs (How Much It Costs to Run)
+
+All Claude calls use **Sonnet** (not Opus) to keep costs minimal:
+
+| Step | Input Tokens | Output Tokens | Cost Per Run |
+|------|-------------|---------------|-------------|
+| Research | ~200 | ~500 | $0.003 |
+| Content (4 posts) | ~500 | ~2000 | $0.012 |
+| Competitors | ~200 | ~600 | $0.004 |
+| Code improvement | ~3000 | ~2000 | $0.021 |
+| **Daily total** | | | **~$0.02-0.04** |
+| **Monthly total** | | | **~$0.60-1.20** |
+
+Every Claude call logs `[TOKENS] in=X out=Y total=Z` in `logs/atlas.log` so you can track actual usage.
 
 ---
 
@@ -166,35 +360,45 @@ All agents use **Claude Sonnet 4** with:
 
 Three standalone, production-ready AI agent templates in `/templates/`. Each is a complete project — zip it, sell it, buyer runs it in 5 minutes.
 
-### 1. Job Search Agent — $49
-> AI-powered job search that scans multiple APIs, scores matches against your profile, and generates tailored cover letters.
+| Template | Price | What It Does |
+|----------|-------|-------------|
+| **Job Search Agent** | $49 | Scans job APIs, scores matches, writes cover letters |
+| **Content Writer Agent** | $79 | Blog posts, social media, SEO analysis, rewriting |
+| **Research Agent** | $99 | Market research, competitor analysis, SWOT, trends |
+| **Bundle (all 3)** | $199 | Save $28 |
 
-- **Files:** `server.py`, `agent.py`, `tools.py`, `index.html`, `README.md`
-- **APIs:** Remotive, Arbeitnow (free), Adzuna (optional)
-- **Features:** Multi-source search, 4-factor AI scoring (0-100), cover letter generation, Telegram notifications, auto-save results
+Each includes: complete source code, FastAPI backend, Claude integration, dark-theme UI, README with docs, `.env.example`.
 
-### 2. Content Writer Agent — $79
-> AI content creation suite: blog posts, social media, SEO analysis, and tone-matched rewriting.
+---
 
-- **Files:** `server.py`, `agent.py`, `index.html`, `README.md`
-- **Features:** 6 writing tones, blog generation (up to 3000 words), multi-platform social posts, SEO keyword analysis, content rewriting, export history
+## Dashboard Pages
 
-### 3. Research Agent — $99
-> AI market research analyst: deep research reports, competitor analysis, trend identification, and SWOT matrices.
+| # | Page | What You See |
+|---|------|-------------|
+| 1 | **Command Center** | KPIs, live activity feed, agent topology graph |
+| 2 | **Agent Registry** | Agent cards — trust scores, confidence, token usage |
+| 3 | **Execution Trace** | Step-by-step timeline of what each agent did and why |
+| 4 | **Approvals** | Approve or reject high-risk agent actions before they execute |
+| 5 | **Decision Attribution** | Full chain: what data → what reasoning → what output |
+| 6 | **Audit Log** | 20-row compliance log, filterable, CSV export |
+| 7 | **Memory Inspector** | What each agent remembers, token utilization bars |
+| 8 | **NEXUS Jobs** | Job search + AI scoring + cover letter generation |
+| 9 | **GitHub** | Your repos, commits, languages, profile sync |
+| 10 | **Template Store** | Storefront with product cards and pricing |
 
-- **Files:** `server.py`, `agent.py`, `tools.py`, `index.html`, `README.md`
-- **APIs:** NewsAPI (free tier, 100 req/day)
-- **Features:** Configurable depth (quick/standard/deep), competitor side-by-side, trend pattern detection, SWOT 2x2, executive summaries, auto-save reports
+---
 
-### Bundle — All 3 for $199 (Save $28)
+## Glass Box vs Black Box
 
-Each template includes:
-- Complete source code (no obfuscation)
-- FastAPI backend + Claude AI integration
-- Professional dark-theme dashboard UI
-- Comprehensive README with API docs
-- `.env.example` for easy setup
-- No subscriptions, no recurring fees
+| Aspect | Black Box AI | Glass Box AI |
+|--------|-------------|-------------|
+| Agent actions | Hidden | Every step logged with reasoning |
+| Decision making | Opaque | Full attribution chain visible |
+| Risk assessment | Unknown | Real-time confidence scores |
+| Human oversight | After the fact | Approval gates before high-risk actions |
+| Compliance | Hope for the best | Immutable audit trail |
+| When it breaks | You find out later | Auto-fixes itself, emails you if it can't |
+| Learning | Repeats mistakes | Records lessons, reads them next run |
 
 ---
 
@@ -202,45 +406,14 @@ Each template includes:
 
 | Layer | Technology |
 |-------|-----------|
-| **Backend** | Python 3.11, FastAPI, Uvicorn |
+| **Backend** | Python 3.9+, FastAPI, Uvicorn |
 | **AI** | Anthropic Claude Sonnet 4 (with prompt caching) |
 | **Frontend** | HTML, Tailwind CSS (CDN), Vanilla JS |
+| **Automation** | Cron scheduler, self-healing pipeline |
 | **Job APIs** | Remotive, Arbeitnow, Adzuna |
-| **News API** | NewsAPI.org |
-| **GitHub** | GitHub REST API v3 |
-| **Notifications** | Telegram Bot API |
-| **Storage** | JSON file persistence |
-
----
-
-## Design System
-
-- **Dark ops/mission control** aesthetic (slate-950 base)
-- **Glass-card effect**: translucent backgrounds with backdrop-blur
-- **Monospace typography**: JetBrains Mono / Fira Code
-- **Neon accent palette**: consistent agent color identity
-
-| Agent | Color | Hex |
-|-------|-------|-----|
-| Atlas | Indigo | `#818cf8` |
-| Scout | Sky | `#38bdf8` |
-| Cipher | Green | `#4ade80` |
-| Scribe | Amber | `#fbbf24` |
-| Sentinel | Red | `#f87171` |
-| NEXUS | Cyan | `#22d3ee` |
-
----
-
-## Glass Box vs Black Box
-
-| Aspect | Black Box | Glass Box |
-|--------|-----------|-----------|
-| Agent actions | Hidden | Every step logged with reasoning |
-| Decision making | Opaque | Full attribution chain visible |
-| Risk assessment | Unknown | Real-time risk scores and badges |
-| Human oversight | After the fact | Approval gates before high-risk actions |
-| Compliance | Hope for the best | Immutable audit trail |
-| Trust | Blind faith | Earned through transparency |
+| **Email** | Gmail SMTP (app password) |
+| **Deployment** | Railway (SkillVector), GitHub auto-deploy |
+| **Storage** | JSON file persistence, markdown posts |
 
 ---
 
@@ -248,6 +421,7 @@ Each template includes:
 
 **Rakesh Reddy Kalamakuntla**
 - CS Master's Student — Kiel, Germany
+- Building: [skill-vector.com](https://skill-vector.com)
 - GitHub: [@RakeshReddy26-bit](https://github.com/RakeshReddy26-bit)
 
 ---
