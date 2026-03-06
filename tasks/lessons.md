@@ -26,3 +26,14 @@ Fix: route all Twitter posts through Zapier webhook.
 Pattern: LinkedIn auth codes expire in 30 seconds.
 Client credentials flow does not work for posting.
 Fix: use Zapier for LinkedIn posting — no OAuth needed.
+
+## Lesson 006 — API auto-recovery
+Pattern: Railway can go down due to deploys, cold starts, or OOM crashes.
+Atlas now auto-detects downtime and pushes an empty commit to trigger Railway redeploy.
+If down 2+ hours (consecutive hourly pings), redeploy is triggered automatically.
+After redeploy, Atlas waits 2 min and verifies. If still down, sends alert email.
+
+## Lesson 007 — Always check production URL
+Pattern: SKILLEVECTOR_URL in .env points to localhost for local dev.
+Health checks must always hit https://api.skill-vector.com (the real production URL).
+Fix: SKILLEVECTOR_PROD_URL constant always points to production domain.

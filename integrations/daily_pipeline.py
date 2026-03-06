@@ -46,6 +46,7 @@ logger = logging.getLogger("atlas.pipeline")
 # Config
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 SKILLEVECTOR_URL = os.getenv("SKILLEVECTOR_URL", "https://api.skill-vector.com")
+SKILLEVECTOR_PROD_URL = "https://api.skill-vector.com"
 CLAUDE_MODEL = "claude-sonnet-4-20250514"
 TODAY = date.today()
 TODAY_STR = TODAY.strftime("%Y-%m-%d")
@@ -133,27 +134,103 @@ def save_post(filename: str, content: str) -> str:
 
 
 # ===============================================================
-# STEP 1 - HEALTH CHECK
+# AUTO-FIX: Trigger Railway redeploy via git push
+# ===============================================================
+
+def trigger_railway_redeploy() -> dict:
+    """Push an empty commit to SkillVector repo to trigger Railway redeploy."""
+    from integrations.github_pusher import run_git
+
+    repo_path = os.getenv("SKILLEVECTOR_REPO_PATH", "")
+    if not repo_path:
+        logger.error("[REDEPLOY] SKILLEVECTOR_REPO_PATH not set")
+        return {"status": "failed", "error": "no repo path"}
+
+    logger.info("[REDEPLOY] Triggering Railway redeploy via empty commit...")
+
+    # Pull latest first
+    run_git(["git", "pull", "origin", "main", "--rebase"], repo_path)
+
+    # Empty commit to trigger Railway auto-deploy
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    success, output = run_git(
+        ["git", "commit", "--allow-empty", "-m", f"fix: Atlas auto-redeploy {now_str} (API was down)"],
+        repo_path,
+    )
+    if not success:
+        logger.error(f"[REDEPLOY] Empty commit failed: {output}")
+        return {"status": "failed", "error": output}
+
+    success, output = run_git(["git", "push", "origin", "main"], repo_path)
+    if not success:
+        logger.error(f"[REDEPLOY] Push failed: {output}")
+        return {"status": "failed", "error": output}
+
+    logger.info("[REDEPLOY] Pushed empty commit — Railway will redeploy in ~2 min")
+    return {"status": "success", "message": "Redeploy triggered"}
+
+
+async def check_api_with_retry(url: str, retries: int = 3, delay: int = 10) -> bool:
+    """Check API health with multiple retries before declaring it down."""
+    for attempt in range(1, retries + 1):
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                r = await client.get(f"{url}/health")
+                if r.status_code == 200:
+                    return True
+                logger.warning(f"[HEALTH] Attempt {attempt}/{retries}: HTTP {r.status_code}")
+        except Exception as e:
+            logger.warning(f"[HEALTH] Attempt {attempt}/{retries}: {e}")
+        if attempt < retries:
+            await asyncio.sleep(delay)
+    return False
+
+
+# ===============================================================
+# STEP 1 - HEALTH CHECK (self-healing)
 # ===============================================================
 
 async def step_health_check() -> dict:
-    """Ping SkillVector API to verify backend is alive."""
+    """Ping SkillVector API. If down, auto-trigger Railway redeploy."""
     logger.info("--- STEP 1: Health Check ---")
     result = {"step": "health_check", "status": "unknown"}
 
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.get(f"{SKILLEVECTOR_URL}/health")
-            if r.status_code == 200:
-                logger.info(f"[HEALTH] SkillVector API is UP (HTTP {r.status_code})")
-                result["status"] = "healthy"
-            else:
-                logger.warning(f"[HEALTH] SkillVector returned HTTP {r.status_code}")
-                result["status"] = "degraded"
-    except Exception as e:
-        logger.warning(f"[HEALTH] SkillVector API unreachable: {e}")
+    # Check production URL (the one users hit)
+    check_url = SKILLEVECTOR_PROD_URL
+    is_up = await check_api_with_retry(check_url, retries=3, delay=10)
+
+    if is_up:
+        logger.info("[HEALTH] SkillVector API is UP")
+        result["status"] = "healthy"
+    else:
+        logger.error("[HEALTH] SkillVector API is DOWN after 3 checks — triggering auto-fix")
         result["status"] = "down"
-        result["error"] = str(e)
+
+        # Auto-fix: trigger redeploy
+        redeploy = trigger_railway_redeploy()
+        result["redeploy"] = redeploy
+
+        if redeploy.get("status") == "success":
+            logger.info("[HEALTH] Waiting 120s for Railway to redeploy...")
+            await asyncio.sleep(120)
+
+            # Verify after redeploy
+            is_up_now = await check_api_with_retry(SKILLEVECTOR_URL, retries=2, delay=15)
+            if is_up_now:
+                logger.info("[HEALTH] API recovered after redeploy!")
+                result["status"] = "recovered"
+                append_lesson(
+                    f"\n## Lesson (auto {TODAY_STR})\n"
+                    f"API was down, Atlas auto-redeployed via empty commit. It recovered."
+                )
+            else:
+                logger.error("[HEALTH] API still down after redeploy — may need manual fix")
+                result["status"] = "critical"
+                send_error_alert(
+                    f"SkillVector API is DOWN and auto-redeploy didn't fix it.\n"
+                    f"URL: {SKILLEVECTOR_URL}\n"
+                    f"Action needed: Check Railway dashboard manually."
+                )
 
     return result
 
@@ -693,18 +770,39 @@ async def run_daily_pipeline() -> dict:
     return pipeline_results
 
 
-# Standalone health ping (used by scheduler hourly)
+# Standalone health ping (used by scheduler hourly) — self-healing
+_consecutive_failures = 0
+
 async def health_ping() -> bool:
-    """Quick health check - returns True if API is up."""
+    """Hourly health check. If API is down 2+ times in a row, trigger redeploy."""
+    global _consecutive_failures
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.get(f"{SKILLEVECTOR_URL}/health")
-            up = r.status_code == 200
-            logger.info(f"[PING] SkillVector: {'UP' if up else 'DOWN'} (HTTP {r.status_code})")
-            return up
+            r = await client.get(f"{SKILLEVECTOR_PROD_URL}/health")
+            if r.status_code == 200:
+                if _consecutive_failures > 0:
+                    logger.info(f"[PING] SkillVector recovered after {_consecutive_failures} failures")
+                _consecutive_failures = 0
+                logger.info("[PING] SkillVector: UP")
+                return True
+            else:
+                _consecutive_failures += 1
+                logger.warning(f"[PING] SkillVector: HTTP {r.status_code} (failures: {_consecutive_failures})")
     except Exception as e:
-        logger.warning(f"[PING] SkillVector unreachable: {e}")
-        return False
+        _consecutive_failures += 1
+        logger.warning(f"[PING] SkillVector unreachable: {e} (failures: {_consecutive_failures})")
+
+    # Auto-fix after 2 consecutive failures (2 hours of downtime)
+    if _consecutive_failures >= 2:
+        logger.error(f"[PING] {_consecutive_failures} consecutive failures — triggering redeploy")
+        result = trigger_railway_redeploy()
+        if result.get("status") == "success":
+            _consecutive_failures = 0  # Reset counter after redeploy attempt
+            send_error_alert(
+                f"SkillVector API was down for {_consecutive_failures}+ hours. "
+                f"Atlas auto-triggered a Railway redeploy. Check logs."
+            )
+    return False
 
 
 # Error alert email
