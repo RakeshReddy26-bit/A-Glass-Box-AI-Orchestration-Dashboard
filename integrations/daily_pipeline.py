@@ -105,6 +105,13 @@ async def call_claude(prompt: str, max_tokens: int = 1024) -> str:
             for block in data.get("content", []):
                 if block.get("type") == "text":
                     text += block.get("text", "")
+
+            # Track token usage
+            usage = data.get("usage", {})
+            input_t = usage.get("input_tokens", 0)
+            output_t = usage.get("output_tokens", 0)
+            logger.info(f"[TOKENS] in={input_t} out={output_t} total={input_t + output_t}")
+
             return text.strip() if text else "[ERROR] Empty Claude response"
 
     except Exception as e:
@@ -152,6 +159,33 @@ async def step_health_check() -> dict:
 
 
 # ===============================================================
+# LEARNING LOOP - Read past lessons before acting
+# ===============================================================
+
+def load_lessons() -> str:
+    """Read tasks/lessons.md so the pipeline learns from past mistakes."""
+    lessons_path = os.path.join(TASKS_DIR, "lessons.md")
+    try:
+        with open(lessons_path, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+        logger.info(f"[LEARN] Loaded {len(content)} chars of lessons")
+        return content
+    except FileNotFoundError:
+        return ""
+
+
+def append_lesson(lesson_text: str):
+    """Append a new lesson to tasks/lessons.md."""
+    lessons_path = os.path.join(TASKS_DIR, "lessons.md")
+    try:
+        with open(lessons_path, "a", encoding="utf-8") as f:
+            f.write(f"\n{lesson_text}\n")
+        logger.info("[LEARN] New lesson appended")
+    except Exception as e:
+        logger.warning(f"[LEARN] Could not append lesson: {e}")
+
+
+# ===============================================================
 # STEP 2 - RESEARCH
 # ===============================================================
 
@@ -179,7 +213,7 @@ async def step_research() -> dict:
     )
 
     try:
-        response = await call_claude(prompt, max_tokens=800)
+        response = await call_claude(prompt, max_tokens=500)
         if response.startswith("[ERROR]"):
             result["error"] = response
             logger.warning(f"[RESEARCH] Claude error: {response}")
@@ -492,7 +526,7 @@ async def step_competitor_monitoring() -> dict:
     )
 
     try:
-        intel = await call_claude(prompt, max_tokens=800)
+        intel = await call_claude(prompt, max_tokens=600)
         if not intel.startswith("[ERROR]"):
             intel_path = os.path.join(TASKS_DIR, "competitor_intel.md")
             header = f"# Competitor Intel - {TODAY_PRETTY}\n\n"
@@ -529,6 +563,11 @@ async def run_daily_pipeline() -> dict:
     pipeline_results = {}
     posts = {}
     image_prompt = ""
+
+    # Load lessons from past runs
+    lessons = load_lessons()
+    if lessons:
+        logger.info("[PIPELINE] Loaded past lessons — avoiding known mistakes")
 
     # STEP 1: Health Check
     try:
@@ -608,16 +647,48 @@ async def run_daily_pipeline() -> dict:
         logger.error(f"[PIPELINE] Competitor monitoring crashed: {e}")
         pipeline_results["competitors"] = {"status": "error", "error": str(e)}
 
-    # SUMMARY
+    # SUMMARY + CONFIDENCE SCORE
     elapsed = (datetime.now() - start_time).total_seconds()
     logger.info("=" * 60)
     logger.info(f"PIPELINE COMPLETE in {elapsed:.1f}s")
+
+    # Calculate confidence score: each successful step = points
+    step_weights = {
+        "health": 10, "research": 15, "content": 25, "save": 10,
+        "email": 25, "code_improvement": 5, "analytics": 5, "competitors": 5,
+    }
+    total_points = 0
+    earned_points = 0
+    failed_steps = []
+
     for step_name, step_result in pipeline_results.items():
+        weight = step_weights.get(step_name, 0)
+        total_points += weight
         status = step_result.get("status", "unknown") if isinstance(step_result, dict) else "done"
         logger.info(f"  {step_name}: {status}")
+        if status in ("healthy", "success", "done", "skipped"):
+            earned_points += weight
+        else:
+            failed_steps.append(f"{step_name}={status}")
+
+    confidence = round((earned_points / max(total_points, 1)) * 100)
+    logger.info(f"  CONFIDENCE: {confidence}%")
     logger.info("=" * 60)
 
+    # Auto-learn: record failures as lessons
+    if failed_steps:
+        lesson_num = 6  # next after existing lessons
+        lesson = (
+            f"\n## Lesson (auto {TODAY_STR})\n"
+            f"Pipeline confidence: {confidence}%. "
+            f"Failed steps: {', '.join(failed_steps)}. "
+            f"Action: investigate and fix before next run."
+        )
+        append_lesson(lesson)
+        logger.info(f"[LEARN] Recorded failure lesson: {', '.join(failed_steps)}")
+
     pipeline_results["elapsed_seconds"] = elapsed
+    pipeline_results["confidence"] = confidence
     pipeline_results["date"] = TODAY_STR
     return pipeline_results
 

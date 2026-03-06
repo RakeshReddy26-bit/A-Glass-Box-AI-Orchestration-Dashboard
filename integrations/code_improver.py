@@ -70,8 +70,8 @@ If the feedback doesn't require a code change, set should_improve to false."""
 
     try:
         response = client.messages.create(
-            model="claude-opus-4-6",
-            max_tokens=4000,
+            model="claude-sonnet-4-20250514",
+            max_tokens=2000,
             temperature=0,
             messages=[{"role": "user", "content": prompt}],
         )
