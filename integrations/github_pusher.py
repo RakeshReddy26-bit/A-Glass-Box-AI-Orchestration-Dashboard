@@ -7,6 +7,7 @@ import logging
 import os
 import subprocess
 from datetime import datetime
+from typing import List, Optional, Tuple
 
 from dotenv import load_dotenv
 
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 SKILLEVECTOR_PATH = os.getenv("SKILLEVECTOR_REPO_PATH")
 
 
-def run_git(command: list[str], cwd: str) -> tuple[bool, str]:
+def run_git(command: List[str], cwd: str) -> Tuple[bool, str]:
     """Run a git command and return (success, output)."""
     try:
         result = subprocess.run(
@@ -33,7 +34,7 @@ def run_git(command: list[str], cwd: str) -> tuple[bool, str]:
         return False, str(e)
 
 
-def push_code_changes(files_changed: list[str], commit_message: str | None = None) -> dict:
+def push_code_changes(files_changed: List[str], commit_message: Optional[str] = None) -> dict:
     """
     Push code changes to GitHub.
     Render auto-deploys after every push to main.
