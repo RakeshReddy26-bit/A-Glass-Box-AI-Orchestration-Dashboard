@@ -37,3 +37,11 @@ After redeploy, Atlas waits 2 min and verifies. If still down, sends alert email
 Pattern: SKILLEVECTOR_URL in .env points to localhost for local dev.
 Health checks must always hit https://api.skill-vector.com (the real production URL).
 Fix: SKILLEVECTOR_PROD_URL constant always points to production domain.
+
+
+## Lesson (auto 2026-03-09)
+Pipeline confidence: 45%. Failed steps: research=unknown, content=unknown, save=unknown, code_improvement=failed. Action: investigate and fix before next run.
+
+
+## Lesson (auto 2026-03-10)
+Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=unknown. Action: investigate and fix before next run.

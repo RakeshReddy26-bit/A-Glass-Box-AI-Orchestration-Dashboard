@@ -71,7 +71,7 @@ If the feedback doesn't require a code change, set should_improve to false."""
     try:
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=2000,
+            max_tokens=4096,
             temperature=0,
             messages=[{"role": "user", "content": prompt}],
         )
@@ -80,7 +80,13 @@ If the feedback doesn't require a code change, set should_improve to false."""
         if "```" in raw:
             raw = raw.split("```")[1].lstrip("json").strip()
 
-        result = json.loads(raw)
+        try:
+            result = json.loads(raw)
+        except json.JSONDecodeError:
+            # If JSON is truncated/broken, check for should_improve: false
+            if '"should_improve": false' in raw or '"should_improve":false' in raw:
+                return {"status": "skipped", "reason": "No code change needed (parsed from partial response)"}
+            raise
         if not result.get("should_improve"):
             return {
                 "status": "skipped",

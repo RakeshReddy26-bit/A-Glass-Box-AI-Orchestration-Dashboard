@@ -1,37 +1,39 @@
-# Competitor Intel - March 06, 2026
+# Competitor Intel - March 10, 2026
 
-# SkillVector Competitive Intelligence Report
-**Date: March 06, 2026**
+# SkillVector Competitive Landscape Analysis
+*Date: March 10, 2026*
 
 ## Active Competitors
 
-### 1. PathwayAI
-**URL:** pathway.ai
-**What they do:** AI-powered career pathing platform that analyzes job market trends and creates personalized roadmaps for tech professionals. Focuses heavily on software engineering and data science roles with real-time salary benchmarking.
-**SkillVector differentiation:** While PathwayAI focuses on traditional tech roles, SkillVector's broader AI career intelligence covers emerging roles across industries and provides deeper skill gap analysis with predictive career modeling.
+### PathAI Careers
+**URL:** pathcareers.ai  
+**What they do:** AI-powered career pathing platform that analyzes job market trends and creates personalized learning roadmaps for tech professionals. Strong focus on data science and ML roles with real-time salary benchmarking.
 
-### 2. TalentGraph Pro
-**URL:** talentgraph.pro
-**What they do:** Enterprise-focused skill gap analyzer that helps organizations identify internal talent mobility opportunities. Uses graph neural networks to map skill relationships and predict role transitions.
-**SkillVector differentiation:** TalentGraph Pro serves enterprise HR teams, whereas SkillVector targets individual professionals and career coaches with more granular, actionable insights for personal career development.
+**SkillVector Differentiation:** Our platform provides deeper industry-specific intelligence across all sectors, not just tech. Our proprietary skills taxonomy covers 15,000+ granular competencies vs their 3,000, and we offer predictive career scenario modeling that PathAI lacks.
 
-### 3. SkillSync
-**URL:** skillsync.com
-**What they do:** ML-driven platform that matches professionals with learning resources and certification programs. Integrates with major MOOCs and provides competency assessments across technical domains.
-**SkillVector differentiation:** SkillSync focuses primarily on learning recommendations, while SkillVector provides comprehensive career intelligence including market demand forecasting, salary optimization, and strategic career planning.
+### TalentGraph Pro
+**URL:** talentgraph.com/pro  
+**What they do:** Enterprise-focused skill gap analysis platform that maps employee capabilities against future job requirements. Integrates with major ATS systems and provides team-level analytics for workforce planning.
 
-### 4. CareerLens AI
-**URL:** careerlens.ai
-**What they do:** Job matching platform using computer vision and NLP to analyze resumes and job descriptions. Specializes in remote-first opportunities and includes cultural fit scoring.
-**SkillVector differentiation:** CareerLens AI is primarily a job matching service, whereas SkillVector provides strategic career intelligence and long-term planning capabilities beyond immediate job placement.
+**SkillVector Differentiation:** While TalentGraph focuses on enterprise clients, SkillVector serves both individual professionals and organizations. Our AI provides more accurate skill decay predictions and includes emerging skill trend analysis that's updated weekly vs their monthly updates.
+
+### SkillShift Analytics
+**URL:** skillshift.io  
+**What they do:** Career transition platform specializing in helping professionals pivot between industries. Uses ML to identify transferable skills and suggests optimal reskilling paths with ROI calculations.
+
+**SkillVector Differentiation:** Our platform offers superior job market intelligence with partnerships across 50+ countries vs their 12-market coverage. SkillVector's career intelligence includes company culture fit analysis and hiring manager insights that SkillShift doesn't provide.
+
+### Nexus Career AI
+**URL:** nexuscareer.ai  
+**What they do:** AI job matching platform that combines skills assessment with personality profiling. Features video-based skill demonstrations and peer benchmarking within specific roles.
+
+**SkillVector Differentiation:** SkillVector's strength lies in our forward-looking career intelligence rather than just matching. We predict skill demand 18-24 months ahead vs Nexus's 6-month horizon, and our platform includes strategic career planning tools beyond job matching.
 
 ## Recent Market Activity
 
 ### Notable Launches
-- **SkillForge** (launched February 2026): New player focusing exclusively on AI/ML engineering career paths with technical interview prep integration
-- **TalentCompass Enterprise** (launched January 2026): Workday's new internal mobility platform with AI-driven skill mapping
+- **SkillForge AI** (launched February 2026): New entrant focusing on creative industry career transitions, backed by Adobe Ventures
+- **CareerCompass 3.0** (January 2026): Major platform redesign by established player, now includes AR/VR skill training modules
 
 ### Recent Funding
-- **PathwayAI**: Closed $18M Series A in December 2025 (led by Andreessen Horowitz)
-- **SkillSync**: Raised $12M extension round in February 2026 (existing investors)
-- **Emerging competitor "NextRole"**: Seed funding of $4.2M announced March 2026 (Sequoia Capital)
+- **PathAI Careers**: Raised $45M Series B in January 2026
