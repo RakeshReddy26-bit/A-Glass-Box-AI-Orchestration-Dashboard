@@ -12,6 +12,19 @@
 ![Agents](https://img.shields.io/badge/agents-6-818cf8?style=flat-square)
 ![Pages](https://img.shields.io/badge/dashboard_pages-10-fbbf24?style=flat-square)
 ![Templates](https://img.shields.io/badge/sellable_templates-3-22d3ee?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-152-4ade80?style=flat-square)
+![Skills](https://img.shields.io/badge/skills_in_DAG-32-38bdf8?style=flat-square)
+![Jobs](https://img.shields.io/badge/indexed_jobs-55-fbbf24?style=flat-square)
+![Pipeline](https://img.shields.io/badge/pipeline_steps-7-818cf8?style=flat-square)
+
+### SkillVector Platform Stats
+
+| Metric | Count |
+|--------|-------|
+| **Automated Tests** | 152 |
+| **Skills in DAG** | 32 |
+| **Indexed Jobs** | 55 |
+| **Pipeline Steps** | 7 |
 
 ---
 
@@ -221,7 +234,7 @@ A-Glass-Box-AI-Orchestration-Dashboard/
 │   ├── job_tools.py              Job search: Remotive + Arbeitnow + Adzuna
 │   ├── github_tools.py           GitHub API integration (8 methods)
 │   ├── profile_manager.py        User profile + cover letter storage
-│   └── tests/                    29 automated tests
+│   └── tests/                    152 automated tests
 │
 ├── integrations/                 🔗 Automation layer (this is where the magic happens)
 │   ├── daily_pipeline.py         835 lines — the full 8-step daily pipeline
