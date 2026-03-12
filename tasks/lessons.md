@@ -49,3 +49,7 @@ Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=
 
 ## Lesson (auto 2026-03-11)
 Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=unknown. Action: investigate and fix before next run.
+
+
+## Lesson (auto 2026-03-12)
+Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=unknown. Action: investigate and fix before next run.

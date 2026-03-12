@@ -1,60 +1,38 @@
-# Competitor Intel - March 11, 2026
+# Competitor Intel - March 12, 2026
 
-# SkillVector Competitive Landscape Analysis
-*Date: March 11, 2026*
+# Competitive Intelligence Report: AI Career Tools (March 2026)
 
-## Active Competitors
+## Major Competitors
 
-### 1. Gloat Career Intelligence
-**URL:** gloat.com/career-intelligence
+### 1. Pluralsight Skills
+**URL:** https://www.pluralsight.com/product/skills
+**What they do:** Technology skills assessment and learning platform that uses AI to identify skill gaps and recommend personalized learning paths. Strong focus on software development, cloud, and data skills with hands-on labs and skill IQ measurements.
 
-**What they do:**
-Enterprise-focused internal mobility platform with AI-powered career pathing. Analyzes employee skills against internal opportunities and provides upskilling recommendations based on company-specific career trajectories.
+**SkillVector Differentiation:** While Pluralsight focuses primarily on tech skills assessment, SkillVector provides broader career intelligence including market demand forecasting, salary predictions, and cross-industry skill transferability analysis powered by real-time job market data.
 
-**How SkillVector differentiates:**
-- Cross-industry career intelligence vs. Gloat's enterprise-internal focus
-- Real-time market demand analysis vs. company-limited opportunity mapping
-- Individual consumer access vs. enterprise B2B only model
+### 2. LinkedIn Learning Career Advice Hub
+**URL:** https://www.linkedin.com/learning/career-advice-hub
+**What they do:** Leverages LinkedIn's professional network data to provide AI-driven career guidance, skill recommendations, and job matching. Integrates learning content with career pathing based on user's network and industry trends.
 
-### 2. Eightfold Talent Intelligence
-**URL:** eightfold.ai/talent-intelligence
+**SkillVector Differentiation:** SkillVector offers more granular, real-time market intelligence and predictive analytics for emerging roles, whereas LinkedIn focuses on existing network patterns and established career paths.
 
-**What they do:**
-AI talent platform combining recruiting, career development, and workforce planning. Uses deep learning to match skills with opportunities and predict career progression paths within large organizations.
+### 3. Coursera Career Discovery
+**URL:** https://www.coursera.org/career-discovery
+**What they do:** AI-powered career exploration tool that matches users with career paths based on interests, skills, and market demand. Includes industry certifications and university partnerships for skill development.
 
-**How SkillVector differentiates:**
-- Transparent skill gap analysis vs. Eightfold's black-box AI approach
-- Focus on emerging tech skills vs. broad workforce management
-- Direct-to-professional model vs. enterprise HR-mediated access
+**SkillVector Differentiation:** SkillVector provides deeper workforce analytics and competitive intelligence features for both individuals and enterprises, including skills benchmarking against industry peers and predictive modeling for future skill needs.
 
-### 3. Pluralsight Skills
-**URL:** pluralsight.com/product/skills
+### 4. Eightfold AI Talent Intelligence Platform
+**URL:** https://eightfold.ai/talent-intelligence/
+**What they do:** Enterprise-focused AI platform for talent acquisition and career development. Uses deep learning to analyze skills, predict career trajectories, and match internal candidates with opportunities.
 
-**What they do:**
-Technology skills assessment and learning platform with AI-driven personalized learning paths. Measures skill proficiency and recommends courses to close gaps for tech professionals.
-
-**How SkillVector differentiates:**
-- Career trajectory intelligence vs. learning-only focus
-- Market salary/demand data integration vs. skills assessment alone
-- Multi-modal skill validation vs. assessment-test dependent approach
-
-### 4. LinkedIn Career Advice Hub
-**URL:** linkedin.com/career-advice
-
-**What they do:**
-Career guidance platform leveraging LinkedIn's professional network data. Provides AI-powered job recommendations, skill insights, and career progression analysis based on similar professional profiles.
-
-**How SkillVector differentiates:**
-- Specialized AI/ML career focus vs. broad professional guidance
-- Predictive market intelligence vs. retrospective network analysis
-- Privacy-first skill analysis vs. social network dependency
+**SkillVector Differentiation:** SkillVector serves both individual professionals and organizations with more accessible, consumer-friendly interfaces while maintaining enterprise-grade analytics capabilities.
 
 ## Recent Market Activity
 
 ### Notable Launches
-- **Coursera Career Intelligence** (January 2026): Expanded beyond course recommendations to include market-based career guidance
-- **GitHub Skills Compass** (October 2025): Code-based skill assessment tool for developers transitioning to ML roles
+- **Coursera Career Discovery 2.0** (January 2026): Major update featuring enhanced AI recommendations and integration with 50+ industry certification programs
+- **Microsoft Viva Skills Connect** (February 2026): New module within Microsoft Viva that provides AI-driven skill gap analysis for enterprise teams
 
 ### Recent Funding
-- **Gloat Series D** (February 2026): $80M led by General Atlantic for international expansion
-- **Multiverse Career AI** (
+- **Seek.ai** raised $45M Series B (February 2026) for their natural language job search and career analytics
