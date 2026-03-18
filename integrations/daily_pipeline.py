@@ -269,7 +269,7 @@ def append_lesson(lesson_text: str):
 async def step_research() -> dict:
     """Use Claude to generate research insights for content creation."""
     logger.info("--- STEP 2: Research ---")
-    result = {"step": "research", "insights": []}
+    result = {"step": "research", "status": "unknown", "insights": []}
 
     prompt = (
         "You are the research agent for SkillVector, an AI career intelligence platform.\n\n"
@@ -292,6 +292,7 @@ async def step_research() -> dict:
     try:
         response = await call_claude(prompt, max_tokens=500)
         if response.startswith("[ERROR]"):
+            result["status"] = "failed"
             result["error"] = response
             logger.warning(f"[RESEARCH] Claude error: {response}")
             return result
@@ -299,13 +300,16 @@ async def step_research() -> dict:
         try:
             insights = json.loads(response)
             result["insights"] = insights
+            result["status"] = "success"
             for i, ins in enumerate(insights, 1):
                 logger.info(f"[RESEARCH] Insight {i}: {ins.get('headline', 'N/A')}")
         except json.JSONDecodeError:
             result["insights"] = [{"headline": "Market research", "detail": response, "relevance": "General"}]
+            result["status"] = "success"
             logger.info("[RESEARCH] Got raw research text (non-JSON)")
 
     except Exception as e:
+        result["status"] = "failed"
         logger.error(f"[RESEARCH] Failed: {e}")
         result["error"] = str(e)
 
@@ -319,7 +323,7 @@ async def step_research() -> dict:
 async def step_generate_content(insights: list) -> dict:
     """Generate all 4 platform posts using Claude + research insights."""
     logger.info("--- STEP 3: Content Generation ---")
-    result = {"step": "content_generation", "posts": {}}
+    result = {"step": "content_generation", "status": "unknown", "posts": {}}
 
     insight_text = ""
     if insights:
@@ -365,6 +369,7 @@ async def step_generate_content(insights: list) -> dict:
     try:
         response = await call_claude(prompt, max_tokens=2000)
         if response.startswith("[ERROR]"):
+            result["status"] = "failed"
             result["error"] = response
             logger.warning(f"[CONTENT] Claude error: {response}")
             return result
@@ -372,6 +377,7 @@ async def step_generate_content(insights: list) -> dict:
         try:
             posts = json.loads(response)
             result["posts"] = posts
+            result["status"] = "success"
             for platform in ["linkedin", "reddit", "twitter", "indie_hackers"]:
                 if platform in posts:
                     chars = len(posts[platform])
@@ -387,15 +393,18 @@ async def step_generate_content(insights: list) -> dict:
                     try:
                         posts = json.loads(stripped)
                         result["posts"] = posts
+                        result["status"] = "success"
                         break
                     except json.JSONDecodeError:
                         continue
             if not result["posts"]:
+                result["status"] = "failed"
                 logger.error("[CONTENT] Could not parse Claude response as JSON")
                 result["error"] = "JSON parse failed"
                 result["raw_response"] = response[:500]
 
     except Exception as e:
+        result["status"] = "failed"
         logger.error(f"[CONTENT] Generation failed: {e}")
         result["error"] = str(e)
 
@@ -441,7 +450,7 @@ async def step_generate_image_prompt() -> str:
 def step_save_posts(posts: dict) -> dict:
     """Save each platform post to posts/ with dated filenames."""
     logger.info("--- STEP 4: Save Posts ---")
-    result = {"step": "save_posts", "saved": []}
+    result = {"step": "save_posts", "status": "unknown", "saved": []}
 
     file_map = {
         "linkedin": f"linkedin_{TODAY_STR}.md",
@@ -459,6 +468,10 @@ def step_save_posts(posts: dict) -> dict:
                 today_name = f"{platform}_today.md"
                 save_post(today_name, content)
 
+    if result["saved"]:
+        result["status"] = "success"
+    else:
+        result["status"] = "failed"
     logger.info(f"[SAVE] Saved {len(result['saved'])} post files")
     return result
 

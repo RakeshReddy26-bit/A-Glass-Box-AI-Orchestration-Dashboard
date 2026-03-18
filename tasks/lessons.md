@@ -53,3 +53,31 @@ Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=
 
 ## Lesson (auto 2026-03-12)
 Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=unknown. Action: investigate and fix before next run.
+
+
+## Lesson (auto 2026-03-13)
+Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=unknown. Action: investigate and fix before next run.
+
+
+## Lesson (auto 2026-03-14)
+Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=unknown. Action: investigate and fix before next run.
+
+
+## Lesson (auto 2026-03-15)
+Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=unknown. Action: investigate and fix before next run.
+
+
+## Lesson (auto 2026-03-16)
+Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=unknown. Action: investigate and fix before next run.
+
+
+## Lesson (auto 2026-03-17)
+Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=unknown. Action: investigate and fix before next run.
+
+
+## Lesson (auto 2026-03-18)
+Pipeline confidence: 35%. Failed steps: research=unknown, content=unknown, email=failed. Action: investigate and fix before next run.
+
+
+## Lesson (auto 2026-03-19)
+Pipeline confidence: 50%. Failed steps: research=unknown, content=unknown, save=unknown. Action: investigate and fix before next run.

@@ -143,6 +143,12 @@ if __name__ == "__main__":
         logger.info("[SCHEDULER] --run-now: Executing pipeline immediately")
         result = asyncio.run(run_pipeline())
         logger.info(f"[SCHEDULER] Done: {result}")
+        email_status = "unknown"
+        if isinstance(result, dict):
+            email_info = result.get("email", {})
+            if isinstance(email_info, dict):
+                email_status = email_info.get("status", "unknown")
+        raise SystemExit(0 if email_status == "success" else 1)
     elif "--health" in sys.argv:
         asyncio.run(run_health_ping())
     else:

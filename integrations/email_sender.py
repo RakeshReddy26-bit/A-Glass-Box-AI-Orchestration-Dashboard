@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 import os
+import ssl
 import smtplib
 import logging
 from email.mime.multipart import MIMEMultipart
@@ -14,6 +15,38 @@ EMAIL_FROM = os.getenv("EMAIL_FROM")
 EMAIL_TO = os.getenv("EMAIL_TO")
 EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")
 LOGO_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "logo.png")
+SMTP_HOST = os.getenv("EMAIL_SMTP_HOST", "smtp.gmail.com")
+SMTP_SSL_PORT = int(os.getenv("EMAIL_SMTP_SSL_PORT", "465"))
+SMTP_STARTTLS_PORT = int(os.getenv("EMAIL_SMTP_STARTTLS_PORT", "587"))
+SMTP_TIMEOUT_SECONDS = int(os.getenv("EMAIL_SMTP_TIMEOUT_SECONDS", "25"))
+
+
+def _send_message(msg: MIMEMultipart) -> None:
+    """Send email using SSL first, then fallback to STARTTLS."""
+    last_error = None
+
+    try:
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_SSL_PORT, timeout=SMTP_TIMEOUT_SECONDS) as server:
+            server.login(EMAIL_FROM, EMAIL_APP_PASSWORD)
+            server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
+            return
+    except Exception as e:
+        last_error = e
+        logger.warning(f"Email SSL send failed, trying STARTTLS fallback: {e}")
+
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP(SMTP_HOST, SMTP_STARTTLS_PORT, timeout=SMTP_TIMEOUT_SECONDS) as server:
+            server.ehlo()
+            server.starttls(context=context)
+            server.ehlo()
+            server.login(EMAIL_FROM, EMAIL_APP_PASSWORD)
+            server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
+            return
+    except Exception as e:
+        last_error = e
+
+    raise RuntimeError(str(last_error) if last_error else "Unknown SMTP error")
 
 
 def send_daily_posts_email(posts: dict) -> dict:
@@ -121,9 +154,7 @@ def send_daily_posts_email(posts: dict) -> dict:
             logo_img.add_header("Content-Disposition", "inline")
             msg.attach(logo_img)
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(EMAIL_FROM, EMAIL_APP_PASSWORD)
-            server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
+        _send_message(msg)
 
         logger.info(f"Daily posts email sent to {EMAIL_TO}")
         return {"status": "success", "sent_to": EMAIL_TO}
