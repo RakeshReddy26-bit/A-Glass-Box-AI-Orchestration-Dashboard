@@ -1,30 +1,37 @@
-# Glass Box AI + SkillVector — Complete System Guide
+# Glass Box AI — Multi-Agent Orchestration with a Human Gate
 
-> **Plain English:** This is two projects that work together.
-> **Glass Box AI** is the brain — 6 AI agents that automate your daily work.
-> **SkillVector** is the product — an AI career intelligence platform for ML engineers.
-> Glass Box runs SkillVector automatically every day. You sleep, it works.
+Six AI agents running an unattended 8-step daily pipeline: research, content
+generation, competitor monitoring, scheduled code improvement, analytics and
+email reporting. It operates [SkillVector](https://skill-vector.com) — an AI
+career intelligence platform — without me touching it.
 
-![Status](https://img.shields.io/badge/status-active-4ade80?style=flat-square)
-![Python](https://img.shields.io/badge/python-3.9+-3776ab?style=flat-square&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688?style=flat-square&logo=fastapi&logoColor=white)
-![Claude](https://img.shields.io/badge/Claude_Sonnet_4-Anthropic-cc785c?style=flat-square)
-![Agents](https://img.shields.io/badge/agents-6-818cf8?style=flat-square)
-![Pages](https://img.shields.io/badge/dashboard_pages-10-fbbf24?style=flat-square)
-![Templates](https://img.shields.io/badge/sellable_templates-3-22d3ee?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-152-4ade80?style=flat-square)
-![Skills](https://img.shields.io/badge/skills_in_DAG-32-38bdf8?style=flat-square)
-![Jobs](https://img.shields.io/badge/indexed_jobs-55-fbbf24?style=flat-square)
-![Pipeline](https://img.shields.io/badge/pipeline_steps-7-818cf8?style=flat-square)
+The name is the design goal. Most agent systems are black boxes: something ran,
+something changed, and you find out later. This one shows its work. Every
+execution is traced, every decision is attributed to the agent that made it, and
+anything high-risk stops at a human approval gate before it reaches production.
 
-### SkillVector Platform Stats
+**Stack:** Python · FastAPI · Claude API · WebSockets · cron
+**Scale:** 6 agents · 8 pipeline steps · 10 dashboard pages · 152 automated tests · 32 skills in the DAG
 
-| Metric | Count |
-|--------|-------|
-| **Automated Tests** | 152 |
-| **Skills in DAG** | 32 |
-| **Indexed Jobs** | 55 |
-| **Pipeline Steps** | 7 |
+---
+
+## Three things worth looking at
+
+**1. A self-healing operations loop.** Hourly health probes hit the production
+API. Sustained failure triggers an automatic redeploy. Pipeline steps retry
+independently, so one flaky step does not kill the run. Failures are written to
+a persisted lessons file that the orchestrator reads **before every run**, so the
+system does not repeat a known-bad path. Details in *Self-Healing* below.
+
+**2. LLM cost held to roughly $1/month.** Not by calling the model less, but by
+prompt caching, a 6-message sliding context window, and per-call token accounting
+that makes cost a dashboard metric rather than an invoice surprise. Details in
+*Token Costs* below.
+
+**3. A human-in-the-loop gate.** High-risk agent actions queue for approval
+instead of executing. The dashboard carries execution traces, decision
+attribution and CSV-exportable audit logs — so "why did it do that?" has an
+answer.
 
 ---
 
